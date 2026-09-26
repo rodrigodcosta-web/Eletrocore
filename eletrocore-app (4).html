@@ -1,0 +1,2688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>EletroCore — Gestão</title>
+<style>
+  :root{
+    --preto:#111111;
+    --branco:#ffffff;
+    --verde:#639922;
+    --verde-claro:#8FBF4A;
+    --vermelho:#C0392B;
+    --cinza-bg:#F6F6F4;
+    --cinza-borda:#E3E3E0;
+    --cinza-texto:#6B6B68;
+  }
+  body.escuro{
+    --preto:#f2f2f2;
+    --branco:#1b1b1b;
+    --cinza-bg:#111111;
+    --cinza-borda:#333333;
+    --cinza-texto:#a0a0a0;
+  }
+  body.escuro{ background:var(--cinza-bg); color:var(--preto); }
+  body.escuro input, body.escuro select, body.escuro textarea{ background:#242424; color:#f2f2f2; border-color:#3a3a3a; }
+  body.escuro .cartao{ background:#1b1b1b; }
+  body.escuro .aviso{ background:#332b12; border-color:#5a4a1a; color:#e0c060; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--cinza-bg);
+    color:var(--preto);
+  }
+  .app{max-width:960px;margin:0 auto;padding:20px 14px 80px;}
+
+  .topo{display:flex;align-items:center;gap:12px;margin-bottom:24px;}
+  .logo-icone{width:38px;height:38px;flex:none;}
+  .topo h1{font-size:20px;font-weight:600;margin:0;letter-spacing:0.2px;}
+  .topo p{margin:0;font-size:11px;color:var(--verde);letter-spacing:1.2px;}
+
+  .abas{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--cinza-borda);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .abas::-webkit-scrollbar{display:none;}
+  .aba{
+    padding:12px 14px;font-size:14px;font-weight:500;color:var(--cinza-texto);
+    cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;flex:none;
+  }
+  .aba.ativa{color:var(--preto);border-bottom-color:var(--verde);}
+
+  .painel{display:none;}
+  .painel.ativo{display:block;}
+
+  .cartao{background:var(--branco);border:1px solid var(--cinza-borda);border-radius:10px;padding:18px;margin-bottom:14px;}
+  .cartao h2{font-size:15px;margin:0 0 12px;font-weight:600;}
+
+  .grid-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .grid-form.uma{grid-template-columns:1fr;}
+  label{display:block;font-size:12px;color:var(--cinza-texto);margin-bottom:4px;}
+  input,select,textarea{
+    width:100%;padding:11px 10px;border:1px solid var(--cinza-borda);border-radius:7px;
+    font-size:16px;font-family:inherit;background:var(--branco);color:var(--preto);
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--verde);}
+  textarea{resize:vertical;min-height:60px;}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:11px 16px;border-radius:7px;border:none;font-size:14px;font-weight:500;
+    cursor:pointer;min-height:40px;
+  }
+  .btn-primario{background:var(--preto);color:var(--branco);}
+  .btn-primario:hover{background:#000;}
+  .btn-verde{background:var(--verde);color:var(--branco);}
+  .btn-vermelho{background:transparent;color:var(--vermelho);border:1px solid var(--vermelho);padding:8px 10px;font-size:12px;min-height:36px;}
+  .btn-fantasma{background:transparent;color:var(--cinza-texto);border:1px solid var(--cinza-borda);padding:8px 10px;font-size:12px;min-height:36px;}
+  .btn-bloco{width:100%;margin-top:10px;}
+
+  .lista-item{
+    display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;
+    padding:12px 0;border-bottom:1px solid var(--cinza-borda);gap:10px;
+  }
+  .lista-item:last-child{border-bottom:none;}
+  .lista-item .principal{font-size:14px;font-weight:500;}
+  .lista-item .secundario{font-size:12px;color:var(--cinza-texto);margin-top:2px;}
+  .acoes{display:flex;gap:6px;flex-wrap:wrap;flex:none;}
+
+  .selo{
+    display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;
+  }
+  .selo-pendente{background:#FFF3D6;color:#8A6100;}
+  .selo-aprovado{background:#E4F0D6;color:var(--verde);}
+  .selo-recusado{background:#FBE4E1;color:var(--vermelho);}
+
+  .resumo-caixa{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+  .resumo-caixa .cartao{margin-bottom:0;text-align:center;padding:14px;}
+  .resumo-caixa .valor{font-size:20px;font-weight:600;}
+  .resumo-caixa .rotulo{font-size:11px;color:var(--cinza-texto);margin-top:2px;}
+  .verde-txt{color:var(--verde);}
+  .vermelho-txt{color:var(--vermelho);}
+
+  .itens-orcamento{border-top:1px solid var(--cinza-borda);margin-top:10px;padding-top:10px;}
+  .item-linha{display:grid;grid-template-columns:1fr 110px 60px 90px 30px;gap:6px;margin-bottom:6px;align-items:center;}
+  .item-linha input, .item-linha select{font-size:13px;padding:7px 8px;}
+  .remover-item{background:none;border:none;color:var(--vermelho);font-size:16px;cursor:pointer;padding:0;}
+  .total-orcamento{text-align:right;font-size:15px;font-weight:600;margin-top:8px;}
+  .subtotal-tipos{text-align:right;font-size:12px;color:var(--cinza-texto);margin-top:2px;}
+
+  .vazio{text-align:center;color:var(--cinza-texto);font-size:13px;padding:24px 0;}
+
+  .modal-fundo{
+    display:none;position:fixed;inset:0;background:rgba(17,17,17,0.5);
+    align-items:center;justify-content:center;padding:20px;z-index:10;
+  }
+  .modal-fundo.aberto{display:flex;}
+  .modal{background:var(--branco);border-radius:12px;padding:24px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto;}
+  .modal h3{margin:0 0 4px;font-size:17px;}
+  .modal .sub{font-size:12px;color:var(--verde);letter-spacing:1px;margin-bottom:14px;}
+  .modal-linha{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px dashed var(--cinza-borda);}
+  .modal-total{display:flex;justify-content:space-between;font-size:16px;font-weight:600;padding-top:10px;}
+  .fechar-modal{margin-top:16px;}
+
+  select#filtroTipoCaixa{width:auto;}
+
+  .aviso{
+    background:#FFF8E8;border:1px solid #F0DCA0;border-radius:8px;
+    padding:10px 12px;font-size:12px;color:#8A6100;margin-bottom:14px;line-height:1.5;
+  }
+  .resultado-calc{background:var(--cinza-bg);border-radius:8px;padding:14px;margin-top:14px;}
+  .resultado-linha{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--cinza-borda);}
+  .resultado-linha:last-child{border-bottom:none;}
+  .resultado-linha .rot{color:var(--cinza-texto);}
+  .resultado-linha .val{font-weight:600;}
+  .tabela-material td, .tabela-material th{padding:6px 4px;font-size:13px;text-align:left;border-bottom:1px solid var(--cinza-borda);}
+  .tabela-material{width:100%;border-collapse:collapse;margin-top:10px;}
+
+  @media(max-width:520px){
+    .grid-form{grid-template-columns:1fr;}
+    .resumo-caixa{grid-template-columns:1fr;}
+    .item-linha{
+      grid-template-columns:1fr 90px;
+      grid-template-areas:"desc desc" "tipo qtd" "valor remover";
+      row-gap:6px;
+    }
+    .item-linha .item-desc{grid-area:desc;}
+    .item-linha .item-tipo{grid-area:tipo;}
+    .item-linha .item-qtd{grid-area:qtd;}
+    .item-linha .item-valor{grid-area:valor;}
+    .item-linha .remover-item{grid-area:remover;justify-self:end;}
+    .cartao{padding:14px;}
+    .lista-item .acoes{width:100%;justify-content:flex-start;}
+  }
+
+  .estoque-baixo{color:var(--vermelho);font-weight:600;}
+  .barra-grafico{margin-bottom:10px;}
+  .barra-grafico .rotulo-barra{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
+  .barra-fundo{background:var(--cinza-bg);border-radius:5px;height:8px;overflow:hidden;}
+  .barra-preenchida{background:var(--verde);height:100%;border-radius:5px;}
+  .barra-preenchida.vermelha{background:var(--vermelho);}
+  .mes-barras{display:flex;align-items:flex-end;gap:14px;height:120px;overflow-x:auto;padding-top:10px;}
+  .mes-coluna{display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;width:44px;}
+  .mes-coluna .barras-par{display:flex;align-items:flex-end;gap:3px;height:90px;}
+  .mes-coluna .barra{width:16px;border-radius:3px 3px 0 0;}
+  .mes-coluna .barra.entrada{background:var(--verde);}
+  .mes-coluna .barra.saida{background:var(--vermelho);}
+  .mes-coluna .rotulo-mes{font-size:10px;color:var(--cinza-texto);}
+  .checkbox-linha{display:flex;align-items:center;gap:8px;font-size:13px;}
+  .checkbox-linha input{width:auto;}
+  .card-destaque{border-left:3px solid var(--verde);}
+
+  @media print{
+    body *{visibility:hidden;}
+    #modalNota, #modalNota *{visibility:visible;}
+    #modalNota{position:absolute;top:0;left:0;background:#fff;padding:0;}
+    .fechar-modal, .btn-imprimir, .btn-whatsapp, .btn-email, .btn-colher-assinatura, #padAssinatura{display:none;}
+    .modal{box-shadow:none;max-width:100%;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topo">
+    <svg class="logo-icone" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="24" fill="#111111" stroke="#111111" stroke-width="2"/>
+      <path d="M28 12 L18 28 L25 28 L23 40 L36 22 L28 22 Z" fill="#8FBF4A"/>
+    </svg>
+    <div style="flex:1;">
+      <h1>EletroCore</h1>
+      <p>GESTÃO DO NEGÓCIO</p>
+    </div>
+    <button class="btn btn-fantasma" onclick="alternarModoEscuro()" id="btnModoEscuro" style="padding:8px 12px;">🌙</button>
+  </div>
+
+  <div class="abas">
+    <div class="aba ativa" data-aba="inicio">Início</div>
+    <div class="aba" data-aba="caixa">Fluxo de caixa</div>
+    <div class="aba" data-aba="agenda">Agenda</div>
+    <div class="aba" data-aba="clientes">Clientes</div>
+    <div class="aba" data-aba="orcamentos">Orçamentos</div>
+    <div class="aba" data-aba="servicos">Serviços</div>
+    <div class="aba" data-aba="estoque">Estoque</div>
+    <div class="aba" data-aba="financeiro">Financeiro</div>
+    <div class="aba" data-aba="calculadora">Calculadora</div>
+  </div>
+
+  <!-- FLUXO DE CAIXA -->
+  <!-- INÍCIO / DASHBOARD -->
+  <div class="painel ativo" id="painel-inicio">
+    <div class="cartao">
+      <h2>Resumo de hoje</h2>
+      <div id="dashboardResumo"></div>
+    </div>
+    <div class="cartao">
+      <h2>Próximos compromissos</h2>
+      <div id="dashboardAgenda"></div>
+    </div>
+    <div class="cartao">
+      <h2>Contas a receber vencidas</h2>
+      <div id="dashboardReceber"></div>
+    </div>
+    <div class="cartao">
+      <h2>Estoque baixo</h2>
+      <div id="dashboardEstoque"></div>
+    </div>
+  </div>
+
+  <div class="painel" id="painel-caixa">
+    <div class="resumo-caixa">
+      <div class="cartao">
+        <div class="valor verde-txt" id="resumoEntradas">R$ 0,00</div>
+        <div class="rotulo">Entradas</div>
+      </div>
+      <div class="cartao">
+        <div class="valor vermelho-txt" id="resumoSaidas">R$ 0,00</div>
+        <div class="rotulo">Saídas</div>
+      </div>
+      <div class="cartao">
+        <div class="valor" id="resumoSaldo">R$ 0,00</div>
+        <div class="rotulo">Saldo</div>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <h2>Novo lançamento</h2>
+      <div class="grid-form">
+        <div>
+          <label>Tipo</label>
+          <select id="caixaTipo">
+            <option value="entrada">Entrada</option>
+            <option value="saida">Saída</option>
+          </select>
+        </div>
+        <div>
+          <label>Valor (R$)</label>
+          <input type="number" step="0.01" id="caixaValor" placeholder="0,00">
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="caixaData">
+        </div>
+        <div>
+          <label>Categoria</label>
+          <input type="text" id="caixaCategoria" placeholder="Ex: Serviço, Ferramenta, Combustível">
+        </div>
+        <div>
+          <label>Forma de pagamento</label>
+          <select id="caixaPagamento">
+            <option value="">—</option>
+            <option value="Pix">Pix</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartão">Cartão</option>
+            <option value="Transferência">Transferência</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label>Descrição</label>
+        <input type="text" id="caixaDescricao" placeholder="Ex: Troca de disjuntor - cliente João">
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="adicionarCaixa()">Adicionar lançamento</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Histórico</h2>
+      <div id="listaCaixa"><div class="vazio">Nenhum lançamento ainda.</div></div>
+    </div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="painel" id="painel-clientes">
+    <div class="cartao">
+      <h2 id="tituloFormCliente">Novo cliente</h2>
+      <div class="grid-form">
+        <div>
+          <label>Nome</label>
+          <input type="text" id="clienteNome" placeholder="Nome do cliente">
+        </div>
+        <div>
+          <label>Telefone</label>
+          <input type="text" id="clienteTelefone" placeholder="(00) 00000-0000">
+        </div>
+      </div>
+      <div class="grid-form" style="margin-top:10px;">
+        <div>
+          <label>Endereço</label>
+          <input type="text" id="clienteEndereco" placeholder="Rua, número, bairro">
+        </div>
+        <div>
+          <label>E-mail (opcional)</label>
+          <input type="email" id="clienteEmail" placeholder="cliente@email.com">
+        </div>
+      </div>
+      <div class="grid-form" style="margin-top:10px;">
+        <div>
+          <label>Categoria</label>
+          <select id="clienteCategoria">
+            <option value="Residencial">Residencial</option>
+            <option value="Empresa">Empresa</option>
+            <option value="Emergencial">Emergencial</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <label>Observações</label>
+        <textarea id="clienteObs" placeholder="Ex: prefere atendimento à tarde"></textarea>
+      </div>
+      <div style="margin-top:10px;">
+        <label>Próxima revisão preventiva (opcional)</label>
+        <input type="date" id="clienteProximaRevisao">
+      </div>
+      <input type="hidden" id="clienteEditandoId" value="">
+      <button class="btn btn-primario btn-bloco" id="btnSalvarCliente" onclick="adicionarCliente()">Salvar cliente</button>
+      <button class="btn btn-fantasma btn-bloco" id="btnCancelarEdicaoCliente" onclick="cancelarEdicaoCliente()" style="display:none;">Cancelar edição</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Clientes cadastrados</h2>
+      <input type="text" id="buscaClientes" placeholder="Buscar por nome..." oninput="renderClientes()" style="margin-bottom:10px;">
+      <div id="listaClientes"><div class="vazio">Nenhum cliente cadastrado ainda.</div></div>
+    </div>
+  </div>
+
+  <!-- ORÇAMENTOS -->
+  <div class="painel" id="painel-orcamentos">
+    <div class="cartao">
+      <h2 id="tituloFormOrcamento">Novo orçamento</h2>
+      <div class="grid-form">
+        <div>
+          <label>Cliente</label>
+          <select id="orcCliente"><option value="">Selecione um cliente</option></select>
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="orcData">
+        </div>
+      </div>
+
+      <div class="itens-orcamento" id="itensOrcamento"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+        <button class="btn btn-fantasma" onclick="adicionarLinhaItem()">+ Adicionar item</button>
+        <select id="selecionarEstoque" style="width:auto; flex:1; min-width:180px;" onchange="adicionarItemDoEstoque()">
+          <option value="">+ Adicionar do estoque...</option>
+        </select>
+      </div>
+
+      <div class="grid-form" style="margin-top:12px;border-top:1px solid var(--cinza-borda);padding-top:12px;">
+        <div>
+          <label>Deslocamento — km percorrido (opcional)</label>
+          <input type="number" id="orcKm" placeholder="Ex: 12" oninput="calcularDeslocamentoOrcamento()">
+        </div>
+        <div>
+          <label>Valor por km (R$)</label>
+          <input type="number" step="0.01" id="orcValorPorKm" placeholder="Ex: 2,50" value="2.50" oninput="calcularDeslocamentoOrcamento()">
+        </div>
+        <div>
+          <label>Valor do deslocamento (R$) — calculado, pode ajustar</label>
+          <input type="number" step="0.01" id="orcValorDeslocamento" placeholder="0,00" oninput="atualizarTotal()">
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+        <input type="checkbox" id="orcDiluirDeslocamento" style="width:auto;" checked>
+        <label for="orcDiluirDeslocamento" style="margin:0;">Embutir o deslocamento dividido entre os serviços na nota (em vez de deixar só no total)</label>
+      </div>
+
+      <div class="grid-form" style="margin-top:12px;border-top:1px solid var(--cinza-borda);padding-top:12px;">
+        <div>
+          <label>Tipo de desconto (opcional)</label>
+          <select id="orcTipoDesconto" onchange="atualizarTotal()">
+            <option value="">Sem desconto</option>
+            <option value="percentual">Percentual (%)</option>
+            <option value="fixo">Valor fixo (R$)</option>
+          </select>
+        </div>
+        <div>
+          <label>Valor do desconto</label>
+          <input type="number" step="0.01" id="orcValorDescontoInput" placeholder="Ex: 10" oninput="atualizarTotal()">
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; margin-top:12px;border-top:1px solid var(--cinza-borda);padding-top:12px;">
+        <input type="checkbox" id="orcRecorrente" style="width:auto;">
+        <label for="orcRecorrente" style="margin:0;">Contrato de manutenção recorrente (mensal)</label>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Validade do orçamento (dias, opcional)</label>
+        <input type="number" id="orcValidadeDias" placeholder="Ex: 15">
+      </div>
+
+      <div class="subtotal-tipos" id="subtotalTipos"></div>
+      <div class="total-orcamento">Total: <span id="orcTotal">R$ 0,00</span></div>
+
+      <input type="hidden" id="orcEditandoId" value="">
+      <button class="btn btn-primario btn-bloco" id="btnSalvarOrcamento" onclick="salvarOrcamento()">Salvar orçamento</button>
+      <button class="btn btn-fantasma btn-bloco" id="btnCancelarEdicaoOrcamento" onclick="cancelarEdicaoOrcamento()" style="display:none;">Cancelar edição</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Orçamentos</h2>
+      <input type="text" id="buscaOrcamentos" placeholder="Buscar por nome do cliente..." oninput="renderOrcamentos()" style="margin-bottom:10px;">
+      <div id="listaOrcamentos"><div class="vazio">Nenhum orçamento criado ainda.</div></div>
+    </div>
+  </div>
+
+  <!-- SERVIÇOS -->
+  <div class="painel" id="painel-servicos">
+    <div class="aviso">
+      Tabela baseada em preços médios de referência (mão de obra apenas, sem material). Ajuste os valores conforme a realidade da sua região — use "Restaurar padrão" se quiser voltar aos valores originais.
+    </div>
+    <div class="cartao">
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+        <input type="text" id="buscaServicos" placeholder="Buscar serviço..." oninput="renderServicos()" style="flex:1;">
+        <button class="btn btn-fantasma" onclick="restaurarServicosPadrao()">Restaurar padrão</button>
+      </div>
+      <div id="listaServicos"></div>
+    </div>
+  </div>
+
+  <!-- AGENDA -->
+  <div class="painel" id="painel-agenda">
+    <div class="cartao" id="cartaoRevisoes" style="display:none;">
+      <h2>Revisões preventivas próximas</h2>
+      <div id="listaRevisoes"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Novo agendamento</h2>
+      <div class="grid-form">
+        <div>
+          <label>Cliente</label>
+          <select id="agendaCliente"><option value="">Selecione um cliente</option></select>
+        </div>
+        <div>
+          <label>Serviço</label>
+          <input type="text" id="agendaServico" placeholder="Ex: Instalação de chuveiro">
+        </div>
+        <div>
+          <label>Data</label>
+          <input type="date" id="agendaData">
+        </div>
+        <div>
+          <label>Horário</label>
+          <input type="time" id="agendaHora">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="adicionarAgenda()">Agendar</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Próximos agendamentos</h2>
+      <div id="listaAgenda"><div class="vazio">Nenhum agendamento ainda.</div></div>
+    </div>
+  </div>
+
+  <!-- ESTOQUE -->
+  <div class="painel" id="painel-estoque">
+    <div class="cartao" id="alertaEstoqueBaixo" style="display:none;background:#FBE4E1;border:1px solid #E8B4AD;">
+      <p style="margin:0;font-size:13px;color:var(--vermelho);font-weight:600;" id="textoAlertaEstoque"></p>
+      <button class="btn btn-vermelho btn-bloco" style="margin-top:10px;" onclick="pedirReposicaoWhatsapp()">Pedir reposição por WhatsApp</button>
+    </div>
+
+    <div class="cartao">
+      <h2 id="tituloFormEstoque">Novo item de estoque</h2>
+      <div class="grid-form">
+        <div>
+          <label>Material</label>
+          <input type="text" id="estoqueNome" placeholder="Ex: Fio 2,5mm² azul">
+        </div>
+        <div>
+          <label>Categoria</label>
+          <select id="estoqueCategoria">
+            <option value="Fios e cabos">Fios e cabos</option>
+            <option value="Disjuntores e proteção">Disjuntores e proteção</option>
+            <option value="Tomadas e interruptores">Tomadas e interruptores</option>
+            <option value="Iluminação">Iluminação</option>
+            <option value="Ferramentas">Ferramentas</option>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-form" style="margin-top:10px;">
+        <div>
+          <label>Unidade</label>
+          <input type="text" id="estoqueUnidade" placeholder="Ex: metro, un, rolo">
+        </div>
+        <div>
+          <label>Custo unitário (R$, opcional)</label>
+          <input type="number" step="0.01" id="estoqueCusto" placeholder="0,00" oninput="calcularPrecoVendaEstoque()">
+        </div>
+        <div>
+          <label>Margem (%)</label>
+          <input type="number" step="1" id="estoqueMargem" placeholder="Ex: 40" value="40" oninput="calcularPrecoVendaEstoque()">
+        </div>
+        <div>
+          <label>Preço de venda (R$) — sugerido, pode ajustar</label>
+          <input type="number" step="0.01" id="estoquePrecoVenda" placeholder="0,00">
+        </div>
+      </div>
+      <div class="grid-form" style="margin-top:10px;">
+        <div>
+          <label>Quantidade atual</label>
+          <input type="number" id="estoqueQtd" placeholder="0">
+        </div>
+        <div>
+          <label>Quantidade mínima desejada</label>
+          <input type="number" id="estoqueMinimo" placeholder="0">
+        </div>
+      </div>
+      <input type="hidden" id="estoqueEditandoId" value="">
+      <button class="btn btn-primario btn-bloco" id="btnSalvarEstoque" onclick="adicionarEstoque()">Salvar item</button>
+      <button class="btn btn-fantasma btn-bloco" id="btnCancelarEdicaoEstoque" onclick="cancelarEdicaoEstoque()" style="display:none;">Cancelar edição</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Itens em estoque</h2>
+      <input type="text" id="buscaEstoque" placeholder="Buscar material..." oninput="renderEstoque()" style="margin-bottom:10px;">
+      <div id="valorTotalEstoque" style="font-size:12px;color:var(--cinza-texto);margin-bottom:10px;"></div>
+      <div id="listaEstoque"><div class="vazio">Nenhum item cadastrado ainda.</div></div>
+    </div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div class="painel" id="painel-financeiro">
+
+    <div class="cartao">
+      <h2>Resumo do mês</h2>
+      <div id="resumoMensalTexto"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Comparativo com o mês passado</h2>
+      <div id="comparativoMensalTexto"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Entradas x saídas por mês</h2>
+      <div class="mes-barras" id="graficoMensal"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Saídas por categoria</h2>
+      <div id="graficoCategorias"><div class="vazio">Cadastre saídas com categoria para ver o gráfico.</div></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Contas a receber</h2>
+      <div id="listaReceber"><div class="vazio">Nenhum orçamento aprovado pendente de pagamento.</div></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Calculadora do DAS (MEI)</h2>
+      <div class="aviso">Os valores do DAS-MEI mudam todo ano pelo governo. Preencha com o valor atual da sua guia (INSS + ISS e/ou ICMS) para eu só somar — não vou supor um valor que pode estar desatualizado.</div>
+      <div class="grid-form">
+        <div>
+          <label>INSS (R$)</label>
+          <input type="number" step="0.01" id="dasInss" placeholder="Ex: 76,00">
+        </div>
+        <div>
+          <label>ISS e/ou ICMS (R$)</label>
+          <input type="number" step="0.01" id="dasIss" placeholder="Ex: 5,00">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularDAS()">Somar guia mensal</button>
+      <div class="resultado-calc" id="resultadoDAS" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Backup dos dados</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Baixe um arquivo com todos os seus dados (clientes, orçamentos, caixa, agenda, estoque) para guardar como cópia de segurança. <strong>Faça isso pelo menos uma vez por mês.</strong></p>
+      <button class="btn btn-verde btn-bloco" onclick="baixarBackup()">Baixar backup (JSON)</button>
+      <label style="margin-top:10px;">Restaurar backup</label>
+      <input type="file" id="arquivoBackup" accept="application/json" onchange="restaurarBackup(event)">
+    </div>
+
+    <div class="cartao">
+      <h2>Exportar para Power BI</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Gera arquivos CSV (um por tabela) prontos pra importar no Power BI. Como o app roda só no seu navegador, não existe conexão automática — sempre que quiser atualizar o relatório, exporte de novo e reimporte no Power BI.</p>
+      <button class="btn btn-fantasma btn-bloco" onclick="exportarParaPowerBI()">Baixar CSVs para Power BI</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Exportar clientes para os Contatos do celular</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Gera um arquivo .vcf com todos os clientes cadastrados. Abra o arquivo baixado no celular e ele já oferece "Adicionar aos Contatos" — mais confiável que integração automática, que o Google vem restringindo.</p>
+      <button class="btn btn-fantasma btn-bloco" onclick="exportarContatosVcard()">Baixar contatos (.vcf)</button>
+    </div>
+
+    <div class="cartao">
+      <h2>Sincronização em tempo real (Google Sheets)</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Cole aqui a URL do App da Web que você criou no Google Apps Script. Depois disso, o Power BI pode se conectar direto na sua planilha do Google e os dados chegam automaticamente sempre que você salvar algo no app.</p>
+      <label>URL do App da Web</label>
+      <input type="text" id="urlSheets" placeholder="https://script.google.com/macros/s/.../exec">
+      <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+        <input type="checkbox" id="syncAutomaticoAtivo" style="width:auto;">
+        <label for="syncAutomaticoAtivo" style="margin:0;">Sincronizar automaticamente ao salvar algo no app</label>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="salvarUrlSheets()">Salvar URL</button>
+      <button class="btn btn-verde btn-bloco" onclick="sincronizarComSheets(true)">Sincronizar agora</button>
+      <div id="statusSyncSheets" style="font-size:12px;color:var(--cinza-texto);margin-top:8px;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Segurança</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Proteja o app com um PIN, já que ele guarda dados de clientes e financeiro.</p>
+      <button class="btn btn-fantasma btn-bloco" onclick="definirPin()">Definir ou remover PIN de acesso</button>
+    </div>
+
+  </div>
+
+  <!-- CALCULADORA -->
+  <div class="painel" id="painel-calculadora">
+
+    <div class="aviso">
+      Os cálculos abaixo usam valores de referência da NBR 5410 (método de instalação B1, condutores de PVC, temperatura ambiente padrão). São uma <strong>estimativa de apoio</strong> — sempre confira com seu conhecimento técnico e as condições reais da obra (agrupamento de circuitos, distância, temperatura) antes de executar.
+    </div>
+
+    <div class="cartao" id="cartaoHistoricoCalc" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">Histórico de cálculos</h2>
+        <button class="btn btn-fantasma" onclick="limparHistoricoCalculo()">Limpar</button>
+      </div>
+      <div id="listaHistoricoCalc" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Disjuntor e bitola do fio</h2>
+      <div class="grid-form">
+        <div>
+          <label>Potência total (W)</label>
+          <input type="number" id="calcPotencia" placeholder="Ex: 5500">
+        </div>
+        <div>
+          <label>Tensão</label>
+          <select id="calcTensao">
+            <option value="127">127V (monofásico)</option>
+            <option value="220-mono">220V (monofásico)</option>
+            <option value="220-tri">220V (trifásico)</option>
+            <option value="380-tri">380V (trifásico)</option>
+          </select>
+        </div>
+        <div>
+          <label>Distância até o quadro (m, opcional)</label>
+          <input type="number" id="calcDistanciaDisjuntor" placeholder="Ex: 15">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularDisjuntorFio()">Calcular</button>
+      <div class="resultado-calc" id="resultadoDisjuntor" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Estimador de material para a obra</h2>
+      <div class="grid-form">
+        <div>
+          <label>Pontos de tomada</label>
+          <input type="number" id="calcTomadas" placeholder="Ex: 12" value="0">
+        </div>
+        <div>
+          <label>Pontos de iluminação</label>
+          <input type="number" id="calcLuz" placeholder="Ex: 8" value="0">
+        </div>
+        <div>
+          <label>Distância média até o quadro (m)</label>
+          <input type="number" id="calcDistancia" placeholder="Ex: 6" value="0">
+        </div>
+        <div>
+          <label>Margem de folga (%)</label>
+          <input type="number" id="calcMargem" value="15">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularMaterial()">Estimar material</button>
+      <div class="resultado-calc" id="resultadoMaterial" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Queda de tensão</h2>
+      <div class="grid-form">
+        <div>
+          <label>Corrente (A)</label>
+          <input type="number" id="qtCorrente" placeholder="Ex: 20">
+        </div>
+        <div>
+          <label>Comprimento do circuito (m, ida)</label>
+          <input type="number" id="qtComprimento" placeholder="Ex: 15">
+        </div>
+        <div>
+          <label>Bitola do fio (mm²)</label>
+          <select id="qtBitola">
+            <option value="1.5">1,5 mm²</option>
+            <option value="2.5">2,5 mm²</option>
+            <option value="4">4 mm²</option>
+            <option value="6">6 mm²</option>
+            <option value="10">10 mm²</option>
+            <option value="16">16 mm²</option>
+          </select>
+        </div>
+        <div>
+          <label>Tensão do circuito (V)</label>
+          <select id="qtTensao">
+            <option value="127">127V</option>
+            <option value="220">220V</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularQuedaTensao()">Calcular</button>
+      <div class="resultado-calc" id="resultadoQueda" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Consumo de energia do equipamento</h2>
+      <div class="grid-form">
+        <div>
+          <label>Potência do equipamento (W)</label>
+          <input type="number" id="ceoPotencia" placeholder="Ex: 5500">
+        </div>
+        <div>
+          <label>Horas de uso por dia</label>
+          <input type="number" id="ceoHoras" placeholder="Ex: 0.5">
+        </div>
+        <div>
+          <label>Dias de uso por mês</label>
+          <input type="number" id="ceoDias" placeholder="Ex: 30" value="30">
+        </div>
+        <div>
+          <label>Valor do kWh (R$)</label>
+          <input type="number" step="0.01" id="ceoTarifa" placeholder="Ex: 0,95">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularConsumo()">Calcular</button>
+      <div class="resultado-calc" id="resultadoConsumo" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Custo de deslocamento (combustível)</h2>
+      <div class="grid-form">
+        <div>
+          <label>Distância ida e volta (km)</label>
+          <input type="number" id="deslKm" placeholder="Ex: 24">
+        </div>
+        <div>
+          <label>Consumo do veículo (km/litro)</label>
+          <input type="number" id="deslConsumo" placeholder="Ex: 12">
+        </div>
+        <div>
+          <label>Preço do combustível (R$/litro)</label>
+          <input type="number" step="0.01" id="deslPreco" placeholder="Ex: 6,10">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularDeslocamento()">Calcular custo</button>
+      <div class="resultado-calc" id="resultadoDeslocamento" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Aterramento (estimativa)</h2>
+      <div class="aviso">Cálculo simplificado de referência. A resistência de terra real depende da resistividade do solo no local, que só se confirma medindo com terrômetro. Use isso como ponto de partida, não como resultado final.</div>
+      <div class="grid-form">
+        <div>
+          <label>Resistividade do solo (Ω·m)</label>
+          <select id="atSolo">
+            <option value="50">Solo úmido/argiloso (~50)</option>
+            <option value="150">Solo comum (~150)</option>
+            <option value="300">Solo seco/arenoso (~300)</option>
+            <option value="1000">Solo rochoso (~1000)</option>
+          </select>
+        </div>
+        <div>
+          <label>Comprimento da haste (m)</label>
+          <select id="atHaste">
+            <option value="2.4">2,4 m</option>
+            <option value="3">3 m</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularAterramento()">Estimar</button>
+      <div class="resultado-calc" id="resultadoAterramento" style="display:none;"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<datalist id="datalistServicos"></datalist>
+
+<!-- MODAL NOTA -->
+<div class="modal-fundo" id="modalNota">
+  <div class="modal">
+    <h3>EletroCore</h3>
+    <div class="sub">MANUTENÇÕES ELÉTRICAS</div>
+    <div id="modalConteudo"></div>
+
+    <div id="areaAssinatura" style="margin-top:14px; border-top:1px solid var(--cinza-borda); padding-top:14px;">
+      <div id="assinaturaExistente" style="display:none;">
+        <p style="font-size:12px;color:var(--cinza-texto);margin:0 0 6px;">Assinatura do cliente:</p>
+        <img id="imgAssinaturaExistente" style="max-width:100%;border:1px solid var(--cinza-borda);border-radius:8px;background:#fff;">
+        <p id="textoAssinadoEm" style="font-size:11px;color:var(--cinza-texto);margin-top:4px;"></p>
+      </div>
+      <div id="assinaturaNova">
+        <button class="btn btn-fantasma btn-bloco btn-colher-assinatura" onclick="abrirPadAssinatura()">Colher assinatura do cliente</button>
+      </div>
+      <div id="padAssinatura" style="display:none;">
+        <p style="font-size:12px;color:var(--cinza-texto);margin:0 0 6px;">Peça pro cliente assinar com o dedo abaixo:</p>
+        <canvas id="canvasAssinatura" style="width:100%;height:150px;border:1px dashed var(--cinza-borda);border-radius:8px;background:#fff;touch-action:none;"></canvas>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-fantasma" style="flex:1;" onclick="limparAssinatura()">Limpar</button>
+          <button class="btn btn-primario" style="flex:1;" onclick="confirmarAssinatura()">Confirmar assinatura</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-verde btn-bloco btn-imprimir" onclick="window.print()">Imprimir / Salvar PDF</button>
+    <button class="btn btn-fantasma btn-bloco btn-whatsapp" onclick="enviarNotaWhatsapp()" style="display:none;">Enviar por WhatsApp</button>
+    <button class="btn btn-fantasma btn-bloco btn-email" onclick="enviarNotaEmail()" style="display:none;">Enviar por E-mail</button>
+    <button class="btn btn-fantasma btn-bloco fechar-modal" onclick="fecharModal()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// Camada de armazenamento: usa o storage do Claude quando disponível (preview),
+// e cai automaticamente para localStorage quando o app é aberto direto no navegador.
+const appStorage = {
+  async get(key){
+    if(window.storage){
+      try{ return await window.storage.get(key); }catch(e){}
+    }
+    try{
+      const v = localStorage.getItem(key);
+      return v===null ? null : {key, value:v};
+    }catch(e){ return null; }
+  },
+  async set(key, value){
+    if(window.storage){
+      try{ return await window.storage.set(key, value); }catch(e){}
+    }
+    try{
+      localStorage.setItem(key, value);
+      return {key, value};
+    }catch(e){ return null; }
+  }
+};
+
+let clientes = [];
+let orcamentos = [];
+let caixa = [];
+let agenda = [];
+let estoque = [];
+let catalogoServicos = [];
+let itemCount = 0;
+
+// Catálogo padrão de serviços (mão de obra) — preço médio de referência
+const SERVICOS_PADRAO = [
+  // Iluminação
+  {categoria:"Iluminação", nome:"Instalação de interruptor simples ou pulsador", precoMinimo:49.00, preco:59.50},
+  {categoria:"Iluminação", nome:"Instalação de interruptor tree-way ou four way", precoMinimo:60.00, preco:70.50},
+  {categoria:"Iluminação", nome:"Instalação de interruptor duplo ou bipolar", precoMinimo:60.00, preco:70.50},
+  {categoria:"Iluminação", nome:"Instalação de interruptor e tomada (juntos)", precoMinimo:60.00, preco:70.50},
+  {categoria:"Iluminação", nome:"Instalação de arandela, pendente ou spot comum", precoMinimo:65.00, preco:81.00},
+  {categoria:"Iluminação", nome:"Instalação de lâmpada fluorescente ou LED (tubular)", precoMinimo:70.00, preco:81.00},
+  {categoria:"Iluminação", nome:"Instalação de lustre simples ou luminária", precoMinimo:92.00, preco:105.50},
+  {categoria:"Iluminação", nome:"Instalação de lustre grande ou luminária", precoMinimo:140.00, preco:156.00},
+  {categoria:"Iluminação", nome:"Instalação de refletor de jardim", precoMinimo:103.00, preco:119.00},
+  {categoria:"Iluminação", nome:"Instalação de refletor de poste comum", precoMinimo:129.00, preco:150.50},
+  {categoria:"Iluminação", nome:"Instalação de refletor de poste com lâmpada a vapor", precoMinimo:129.00, preco:150.50},
+  {categoria:"Iluminação", nome:"Instalação de reator de lâmpada a vapor", precoMinimo:81.00, preco:94.50},
+  {categoria:"Iluminação", nome:"Instalação de fotocélula ou sensor de presença", precoMinimo:81.00, preco:102.50},
+  {categoria:"Iluminação", nome:"Instalação de refletor LED + fotocélula/sensor de presença", precoMinimo:70.00, preco:91.50},
+  {categoria:"Iluminação", nome:"Instalação de luminária de emergência de sobrepor", precoMinimo:81.00, preco:102.50},
+  {categoria:"Iluminação", nome:"Instalação de luminária de emergência de embutir (caixinha 2x4)", precoMinimo:60.00, preco:76.00},
+  {categoria:"Iluminação", nome:"Instalação de perfil de LED (metro linear)", precoMinimo:162.00, preco:183.50},
+  {categoria:"Iluminação", nome:"Instalação de luminária tubular ou troca reator/LED", precoMinimo:81.00, preco:97.00},
+  // Ponto de utilização
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada simples", precoMinimo:38.00, preco:49.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada dupla", precoMinimo:49.00, preco:59.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada tripla", precoMinimo:60.00, preco:70.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada de piso e/ou telefone", precoMinimo:60.00, preco:70.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada industrial (3P+T)", precoMinimo:92.00, preco:113.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de tomada de sobrepor com canaleta", precoMinimo:60.00, preco:70.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de chave de bóia superior e inferior (residência)", precoMinimo:119.00, preco:140.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de ventilador de teto", precoMinimo:140.00, preco:161.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de ventilador de parede", precoMinimo:92.00, preco:102.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de chuveiro elétrico simples", precoMinimo:92.00, preco:102.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de chuveiro luxo (eletrônico/pressurizado)", precoMinimo:140.00, preco:156.00},
+  {categoria:"Ponto de utilização", nome:"Troca de resistência de chuveiro", precoMinimo:81.00, preco:92.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de torneira elétrica", precoMinimo:92.00, preco:102.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de campainha até 20mt", precoMinimo:70.00, preco:81.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de interfone 1 chamada", precoMinimo:151.00, preco:188.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de interfone 2 chamadas", precoMinimo:194.00, preco:231.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de interfone 4 chamadas", precoMinimo:430.00, preco:462.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de vídeo porteiro", precoMinimo:183.00, preco:204.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de câmera CFTV 1 câmera wifi (sem ponto elétrico)", precoMinimo:151.00, preco:172.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de câmeras CFTV 3 câmeras wifi (sem ponto elétrico)", precoMinimo:366.00, preco:387.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de portão eletrônico deslizante", precoMinimo:269.00, preco:290.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de portão eletrônico pivotante/basculante", precoMinimo:500.00, preco:532.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de botoeira para fechadura eletrônica (portão social)", precoMinimo:60.00, preco:70.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de fechadura eletrônica (portão social)", precoMinimo:151.00, preco:172.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de exaustor cozinha ou banheiro", precoMinimo:232.00, preco:253.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de sistema de alarme residencial", precoMinimo:807.00, preco:979.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de aquecedor elétrico (com passagem de cabos)", precoMinimo:2086.00, preco:2602.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de detector de fumaça", precoMinimo:1151.00, preco:1435.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de cerca elétrica (por metro)", precoMinimo:60.00, preco:81.50},
+  {categoria:"Ponto de utilização", nome:"Instalação de nobreak", precoMinimo:291.00, preco:323.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de aquecedor a gás", precoMinimo:312.00, preco:371.00},
+  {categoria:"Ponto de utilização", nome:"Instalação de termostato ou temporizador", precoMinimo:92.00, preco:102.50},
+  // Quadros de distribuição/Painel
+  {categoria:"Quadros de distribuição", nome:"Substituição de disjuntor monofásico", precoMinimo:49.00, preco:59.50},
+  {categoria:"Quadros de distribuição", nome:"Substituição de disjuntor bifásico", precoMinimo:70.00, preco:81.00},
+  {categoria:"Quadros de distribuição", nome:"Substituição de disjuntor trifásico", precoMinimo:108.00, preco:118.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação de IDR (interruptor diferencial residual)", precoMinimo:129.00, preco:150.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação de DPS", precoMinimo:113.00, preco:129.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação de barramento pente monopolar no QDC", precoMinimo:54.00, preco:70.00},
+  {categoria:"Quadros de distribuição", nome:"Instalação de barramento pente bipolar no QDC", precoMinimo:65.00, preco:81.00},
+  {categoria:"Quadros de distribuição", nome:"Instalação de barramento pente tripolar no QDC", precoMinimo:76.00, preco:92.00},
+  {categoria:"Quadros de distribuição", nome:"Instalação de barramento de neutro e/ou terra", precoMinimo:76.00, preco:92.00},
+  {categoria:"Quadros de distribuição", nome:"Instalação de haste de aterramento", precoMinimo:189.00, preco:210.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação de contator e/ou relé térmico", precoMinimo:199.00, preco:231.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação e montagem QDC 6 circuitos + DR + DPS", precoMinimo:533.00, preco:559.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação e montagem QDC 12 circuitos + DR + DPS", precoMinimo:807.00, preco:833.50},
+  {categoria:"Quadros de distribuição", nome:"Instalação e montagem QDC 18 circuitos + DR + DPS", precoMinimo:1011.00, preco:1038.00},
+  {categoria:"Quadros de distribuição", nome:"Instalação e montagem QDC 24 circuitos + DR + DPS", precoMinimo:1355.00, preco:1387.00},
+  // Passagem de cabos
+  {categoria:"Passagem de cabos", nome:"Entrada monofásica (QM para QDC)", precoMinimo:183.00, preco:215.50},
+  {categoria:"Passagem de cabos", nome:"Entrada bifásica ou trifásica (QM para QDC)", precoMinimo:248.00, preco:285.50},
+  {categoria:"Passagem de cabos", nome:"Alimentação para motores", precoMinimo:172.00, preco:204.50},
+  // Solução de problemas elétricos
+  {categoria:"Solução de problemas", nome:"Curto circuito monofásico", precoMinimo:140.00, preco:172.50},
+  {categoria:"Solução de problemas", nome:"Curto circuito bifásico", precoMinimo:172.00, preco:204.50},
+  {categoria:"Solução de problemas", nome:"Curto circuito trifásico", precoMinimo:199.00, preco:237.00},
+  // Padrão de entrada
+  {categoria:"Padrão de entrada", nome:"Instalação de medidor - padrão monofásico 127/220V", precoMinimo:1161.00, preco:1494.50},
+  {categoria:"Padrão de entrada", nome:"Instalação de medidor - padrão bifásico 220V", precoMinimo:1387.00, preco:1736.50},
+  {categoria:"Padrão de entrada", nome:"Instalação de medidor - padrão trifásico 220V", precoMinimo:1613.00, preco:1962.50},
+  // Carregador veicular
+  {categoria:"Carregador veicular", nome:"Instalação de carregador veicular", precoMinimo:1613.00, preco:1881.50},
+  // Ar condicionado
+  {categoria:"Ar condicionado", nome:"Alimentação elétrica para ar condicionado", precoMinimo:103.00, preco:124.50},
+  {categoria:"Ar condicionado", nome:"Instalação de AR split inverter 9000 btus", precoMinimo:522.00, preco:581.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR split inverter 12000 btus", precoMinimo:522.00, preco:581.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR split inverter 18000 btus", precoMinimo:635.00, preco:694.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR split inverter 24000 btus", precoMinimo:753.00, preco:812.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR split inverter 30000 btus", precoMinimo:925.00, preco:978.50},
+  {categoria:"Ar condicionado", nome:"Instalação de AR on/off convencional 9000 btus", precoMinimo:463.00, preco:511.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR on/off convencional 12000 btus", precoMinimo:522.00, preco:570.50},
+  {categoria:"Ar condicionado", nome:"Instalação de AR on/off convencional 18000 btus", precoMinimo:581.00, preco:624.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR on/off convencional 24000 btus", precoMinimo:694.00, preco:737.00},
+  {categoria:"Ar condicionado", nome:"Instalação de AR on/off convencional 30000 btus", precoMinimo:807.00, preco:855.00},
+  {categoria:"Ar condicionado", nome:"Limpeza em tubulação de ar condicionado", precoMinimo:60.00, preco:70.50},
+  // Sistema solar
+  {categoria:"Sistema solar", nome:"Instalação de painel solar - gerador 8kWp", precoMinimo:8708.00, preco:9245.50},
+  // Atendimento emergencial
+  {categoria:"Atendimento emergencial", nome:"Atendimento técnico emergencial (fim de semana)", precoMinimo:242.00, preco:274.50},
+  {categoria:"Atendimento emergencial", nome:"Atendimento técnico emergencial (durante a semana)", precoMinimo:172.00, preco:204.50},
+  // Automação residencial
+  {categoria:"Automação residencial", nome:"Instalação de interruptor inteligente", precoMinimo:119.00, preco:205.00},
+  {categoria:"Automação residencial", nome:"Instalação de mini relé interruptor", precoMinimo:172.00, preco:231.50},
+  {categoria:"Automação residencial", nome:"Instalação de relé de impulso", precoMinimo:140.00, preco:188.50},
+  {categoria:"Automação residencial", nome:"Instalação de relé dimmer", precoMinimo:172.00, preco:231.50},
+  {categoria:"Automação residencial", nome:"Instalação e configuração de controle remoto universal", precoMinimo:119.00, preco:178.00},
+  {categoria:"Automação residencial", nome:"Instalação de tomada inteligente", precoMinimo:81.00, preco:108.00},
+  {categoria:"Automação residencial", nome:"Instalação de mini relé controle de persiana", precoMinimo:172.00, preco:231.50},
+  {categoria:"Automação residencial", nome:"Instalação e configuração de hub", precoMinimo:172.00, preco:204.50},
+  {categoria:"Automação residencial", nome:"Instalação e configuração de roteador", precoMinimo:119.00, preco:205.00},
+  {categoria:"Automação residencial", nome:"Instalação e configuração de fechadura inteligente", precoMinimo:226.00, preco:312.00},
+  {categoria:"Automação residencial", nome:"Instalação e configuração de assistente virtual (Alexa)", precoMinimo:119.00, preco:172.50},
+];
+
+function formatarMoeda(v){
+  return "R$ " + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function formatarData(d){
+  if(!d) return "";
+  const [ano,mes,dia] = d.split("-");
+  return dia+"/"+mes+"/"+ano;
+}
+function formatarDataComDia(d){
+  if(!d) return "";
+  const diasSemana = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const dt = new Date(d+'T00:00:00');
+  return diasSemana[dt.getDay()]+' · '+formatarData(d);
+}
+function gerarId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+function mostrarConfirmacao(mensagem){
+  let toast = document.getElementById('toastConfirmacao');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'toastConfirmacao';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111111;color:#ffffff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.25s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = '✓ '+mensagem;
+  toast.style.opacity='1';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(()=>{ toast.style.opacity='0'; }, 1800);
+}
+
+// ---------- STORAGE ----------
+function renderDashboard(){
+  const elResumo = document.getElementById('dashboardResumo');
+  const elAgenda = document.getElementById('dashboardAgenda');
+  const elReceber = document.getElementById('dashboardReceber');
+  const elEstoque = document.getElementById('dashboardEstoque');
+  if(!elResumo) return;
+
+  const hoje = new Date().toISOString().slice(0,10);
+  const mesAtual = hoje.slice(0,7);
+  const entradasMes = caixa.filter(c=>c.tipo==='entrada' && (c.data||'').slice(0,7)===mesAtual).reduce((s,c)=>s+c.valor,0);
+  const saidasMes = caixa.filter(c=>c.tipo==='saida' && (c.data||'').slice(0,7)===mesAtual).reduce((s,c)=>s+c.valor,0);
+  const compromissosHoje = agenda.filter(a=>a.data===hoje && a.status!=='cancelado').length;
+  elResumo.innerHTML = `
+    <div class="resultado-linha"><span class="rot">Saldo do mês</span><span class="val">${formatarMoeda(entradasMes-saidasMes)}</span></div>
+    <div class="resultado-linha"><span class="rot">Compromissos hoje</span><span class="val">${compromissosHoje}</span></div>
+    <div class="resultado-linha"><span class="rot">Clientes cadastrados</span><span class="val">${clientes.length}</span></div>
+  `;
+
+  const proximos = agenda.filter(a=>a.data>=hoje && a.status!=='cancelado' && a.status!=='concluido')
+    .sort((a,b)=>(a.data+(a.hora||'')).localeCompare(b.data+(b.hora||''))).slice(0,5);
+  elAgenda.innerHTML = proximos.length===0 ? '<div class="vazio">Nenhum compromisso agendado.</div>' :
+    proximos.map(a=>`
+      <div class="lista-item">
+        <div>
+          <div class="principal">${escapeHtml(nomeCliente(a.clienteId))}${a.servico?' · '+escapeHtml(a.servico):''}</div>
+          <div class="secundario">${formatarData(a.data)}${a.hora?' às '+a.hora:''}</div>
+        </div>
+      </div>
+    `).join('');
+
+  const vencidos = orcamentos.filter(o=>{
+    if(o.status!=='aprovado' || o.pago) return false;
+    return o.data && o.data < hoje;
+  });
+  elReceber.innerHTML = vencidos.length===0 ? '<div class="vazio">Nenhuma conta vencida.</div>' :
+    vencidos.map(o=>`
+      <div class="lista-item">
+        <div>
+          <div class="principal">${escapeHtml(nomeCliente(o.clienteId))} · ${formatarMoeda(o.total)}</div>
+          <div class="secundario" style="color:var(--vermelho);">Vencido desde ${formatarData(o.data)}</div>
+        </div>
+      </div>
+    `).join('');
+
+  const baixos = estoque.filter(e=>e.minimo>0 && e.qtd<e.minimo);
+  elEstoque.innerHTML = baixos.length===0 ? '<div class="vazio">Nenhum item abaixo do mínimo.</div>' :
+    baixos.map(e=>`
+      <div class="lista-item">
+        <div>
+          <div class="principal">${escapeHtml(e.nome)}</div>
+          <div class="secundario" style="color:var(--vermelho);">${e.qtd} ${escapeHtml(e.unidade||'un')} (mínimo: ${e.minimo})</div>
+        </div>
+      </div>
+    `).join('');
+}
+
+let historicoCalculos = [];
+
+async function salvarHistoricoCalculo(tipo, resumo){
+  historicoCalculos.unshift({id:gerarId(), tipo, resumo, data:new Date().toISOString()});
+  historicoCalculos = historicoCalculos.slice(0,30);
+  try{ await appStorage.set('eletrocore:historicoCalculos', JSON.stringify(historicoCalculos)); }catch(e){}
+  renderHistoricoCalculo();
+}
+async function limparHistoricoCalculo(){
+  if(!confirm('Limpar todo o histórico de cálculos?')) return;
+  historicoCalculos = [];
+  try{ await appStorage.set('eletrocore:historicoCalculos', JSON.stringify(historicoCalculos)); }catch(e){}
+  renderHistoricoCalculo();
+}
+function renderHistoricoCalculo(){
+  const cartao = document.getElementById('cartaoHistoricoCalc');
+  const lista = document.getElementById('listaHistoricoCalc');
+  if(!cartao) return;
+  if(historicoCalculos.length===0){ cartao.style.display='none'; return; }
+  cartao.style.display='block';
+  lista.innerHTML = historicoCalculos.map(h=>{
+    const hora = new Date(h.data);
+    const horaTexto = hora.toLocaleDateString('pt-BR')+' '+hora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="lista-item"><div><div class="principal">${escapeHtml(h.tipo)}</div><div class="secundario">${escapeHtml(h.resumo)} · ${horaTexto}</div></div></div>`;
+  }).join('');
+}
+async function carregarHistoricoCalculo(){
+  try{
+    const r = await appStorage.get('eletrocore:historicoCalculos');
+    historicoCalculos = r ? JSON.parse(r.value) : [];
+  }catch(e){ historicoCalculos = []; }
+  renderHistoricoCalculo();
+}
+
+async function carregarTudo(){
+  try{
+    const c = await appStorage.get('eletrocore:clientes');
+    clientes = c ? JSON.parse(c.value) : [];
+  }catch(e){ clientes = []; }
+  try{
+    const o = await appStorage.get('eletrocore:orcamentos');
+    orcamentos = o ? JSON.parse(o.value) : [];
+  }catch(e){ orcamentos = []; }
+  try{
+    const x = await appStorage.get('eletrocore:caixa');
+    caixa = x ? JSON.parse(x.value) : [];
+  }catch(e){ caixa = []; }
+  try{
+    const a = await appStorage.get('eletrocore:agenda');
+    agenda = a ? JSON.parse(a.value) : [];
+  }catch(e){ agenda = []; }
+  try{
+    const e2 = await appStorage.get('eletrocore:estoque');
+    estoque = e2 ? JSON.parse(e2.value) : [];
+  }catch(e){ estoque = []; }
+  try{
+    const s = await appStorage.get('eletrocore:servicos');
+    catalogoServicos = s ? JSON.parse(s.value) : JSON.parse(JSON.stringify(SERVICOS_PADRAO));
+  }catch(e){ catalogoServicos = JSON.parse(JSON.stringify(SERVICOS_PADRAO)); }
+
+  renderClientes();
+  renderOrcamentos();
+  renderCaixa();
+  renderAgenda();
+  renderEstoque();
+  renderFinanceiro();
+  renderServicos();
+  preencherDatalistServicos();
+  preencherSelectEstoque();
+  preencherSelectClientes();
+  renderDashboard();
+  triggerSyncSheets();
+  await carregarHistoricoCalculo();
+  await carregarConfigSync();
+}
+
+async function salvarServicos(){
+  try{ await appStorage.set('eletrocore:servicos', JSON.stringify(catalogoServicos)); }catch(e){ console.error(e); }
+}
+
+function preencherDatalistServicos(){
+  const dl = document.getElementById('datalistServicos');
+  const opcoesServicos = catalogoServicos.map(s=>`<option value="${escapeHtml(s.nome)}"></option>`).join('');
+  const opcoesEstoque = estoque.map(e=>`<option value="${escapeHtml(e.nome)}"></option>`).join('');
+  dl.innerHTML = opcoesServicos + opcoesEstoque;
+}
+
+function renderServicos(){
+  const container = document.getElementById('listaServicos');
+  const buscaEl = document.getElementById('buscaServicos');
+  const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  const filtrados = busca ? catalogoServicos.filter(s=>s.nome.toLowerCase().includes(busca)) : catalogoServicos;
+
+  const porCategoria = {};
+  filtrados.forEach(s=>{ (porCategoria[s.categoria] = porCategoria[s.categoria]||[]).push(s); });
+
+  if(Object.keys(porCategoria).length===0){ container.innerHTML = '<div class="vazio">Nenhum serviço encontrado.</div>'; return; }
+
+  container.innerHTML = Object.keys(porCategoria).map(cat=>`
+    <h3 style="font-size:13px;color:var(--verde);margin:16px 0 6px;">${escapeHtml(cat)}</h3>
+    ${porCategoria[cat].map(s=>{
+      const idx = catalogoServicos.indexOf(s);
+      return `
+      <div class="lista-item">
+        <div class="principal" style="flex:1 1 100%;">${escapeHtml(s.nome)}</div>
+        <div class="acoes" style="flex-wrap:wrap;gap:10px;">
+          <span style="font-size:12px;color:var(--cinza-texto);">Mín. R$</span>
+          <input type="number" step="0.01" value="${(s.precoMinimo!==undefined?s.precoMinimo:s.preco).toFixed(2)}" style="width:80px;" onchange="atualizarPrecoMinimoServico(${idx}, this.value)">
+          <span style="font-size:12px;color:var(--cinza-texto);">Médio R$</span>
+          <input type="number" step="0.01" value="${s.preco.toFixed(2)}" style="width:80px;" onchange="atualizarPrecoServico(${idx}, this.value)">
+        </div>
+      </div>`;
+    }).join('')}
+  `).join('');
+}
+
+async function atualizarPrecoServico(idx, valor){
+  const preco = parseFloat(valor);
+  if(isNaN(preco) || preco<0) return;
+  catalogoServicos[idx].preco = preco;
+  await salvarServicos();
+}
+
+async function atualizarPrecoMinimoServico(idx, valor){
+  const preco = parseFloat(valor);
+  if(isNaN(preco) || preco<0) return;
+  catalogoServicos[idx].precoMinimo = preco;
+  await salvarServicos();
+}
+
+async function restaurarServicosPadrao(){
+  if(!confirm('Isso vai restaurar todos os preços para os valores padrão da tabela original. Continuar?')) return;
+  catalogoServicos = JSON.parse(JSON.stringify(SERVICOS_PADRAO));
+  await salvarServicos();
+  renderServicos();
+  preencherDatalistServicos();
+  preencherSelectEstoque();
+}
+
+async function salvarClientes(){
+  try{ await appStorage.set('eletrocore:clientes', JSON.stringify(clientes)); }catch(e){ console.error(e); }
+}
+async function salvarOrcamentos(){
+  try{ await appStorage.set('eletrocore:orcamentos', JSON.stringify(orcamentos)); }catch(e){ console.error(e); }
+}
+async function salvarCaixa(){
+  try{ await appStorage.set('eletrocore:caixa', JSON.stringify(caixa)); }catch(e){ console.error(e); }
+}
+async function salvarAgenda(){
+  try{ await appStorage.set('eletrocore:agenda', JSON.stringify(agenda)); }catch(e){ console.error(e); }
+}
+async function salvarEstoque(){
+  try{ await appStorage.set('eletrocore:estoque', JSON.stringify(estoque)); }catch(e){ console.error(e); }
+}
+
+// ---------- ABAS ----------
+document.querySelectorAll('.aba').forEach(aba=>{
+  aba.addEventListener('click', ()=>{
+    document.querySelectorAll('.aba').forEach(a=>a.classList.remove('ativa'));
+    document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
+    aba.classList.add('ativa');
+    document.getElementById('painel-'+aba.dataset.aba).classList.add('ativo');
+  });
+});
+
+// ---------- CLIENTES ----------
+async function adicionarCliente(){
+  const nome = document.getElementById('clienteNome').value.trim();
+  const telefone = document.getElementById('clienteTelefone').value.trim();
+  const endereco = document.getElementById('clienteEndereco').value.trim();
+  const email = document.getElementById('clienteEmail').value.trim();
+  const categoria = document.getElementById('clienteCategoria').value;
+  const obs = document.getElementById('clienteObs').value.trim();
+  const proximaRevisao = document.getElementById('clienteProximaRevisao').value;
+  const editandoId = document.getElementById('clienteEditandoId').value;
+  if(!nome){ alert('Digite o nome do cliente.'); return; }
+
+  if(editandoId){
+    const c = clientes.find(c=>c.id===editandoId);
+    if(c){ c.nome=nome; c.telefone=telefone; c.endereco=endereco; c.email=email; c.categoria=categoria; c.obs=obs; c.proximaRevisao=proximaRevisao; }
+    cancelarEdicaoCliente();
+  } else {
+    clientes.push({id:gerarId(), nome, telefone, endereco, email, categoria, obs, proximaRevisao});
+    document.getElementById('clienteNome').value='';
+    document.getElementById('clienteTelefone').value='';
+    document.getElementById('clienteEndereco').value='';
+    document.getElementById('clienteEmail').value='';
+    document.getElementById('clienteCategoria').value='Residencial';
+    document.getElementById('clienteObs').value='';
+    document.getElementById('clienteProximaRevisao').value='';
+  }
+  await salvarClientes();
+  renderClientes();
+  preencherSelectClientes();
+  renderAgenda();
+  mostrarConfirmacao('Cliente salvo');
+}
+
+function editarCliente(id){
+  const c = clientes.find(c=>c.id===id);
+  if(!c) return;
+  document.getElementById('clienteEditandoId').value = id;
+  document.getElementById('clienteNome').value = c.nome||'';
+  document.getElementById('clienteTelefone').value = c.telefone||'';
+  document.getElementById('clienteEndereco').value = c.endereco||'';
+  document.getElementById('clienteEmail').value = c.email||'';
+  document.getElementById('clienteCategoria').value = c.categoria||'Residencial';
+  document.getElementById('clienteObs').value = c.obs||'';
+  document.getElementById('clienteProximaRevisao').value = c.proximaRevisao||'';
+  document.getElementById('tituloFormCliente').textContent = 'Editar cliente';
+  document.getElementById('btnSalvarCliente').textContent = 'Salvar alterações';
+  document.getElementById('btnCancelarEdicaoCliente').style.display='block';
+  document.getElementById('painel-clientes').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelarEdicaoCliente(){
+  document.getElementById('clienteEditandoId').value='';
+  document.getElementById('clienteNome').value='';
+  document.getElementById('clienteTelefone').value='';
+  document.getElementById('clienteEndereco').value='';
+  document.getElementById('clienteEmail').value='';
+  document.getElementById('clienteCategoria').value='Residencial';
+  document.getElementById('clienteObs').value='';
+  document.getElementById('clienteProximaRevisao').value='';
+  document.getElementById('tituloFormCliente').textContent = 'Novo cliente';
+  document.getElementById('btnSalvarCliente').textContent = 'Salvar cliente';
+  document.getElementById('btnCancelarEdicaoCliente').style.display='none';
+}
+
+async function removerCliente(id){
+  if(!confirm('Remover este cliente?')) return;
+  clientes = clientes.filter(c=>c.id!==id);
+  await salvarClientes();
+  renderClientes();
+  preencherSelectClientes();
+}
+
+function renderClientes(){
+  const lista = document.getElementById('listaClientes');
+  const buscaEl = document.getElementById('buscaClientes');
+  const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  const filtrados = busca ? clientes.filter(c=>c.nome.toLowerCase().includes(busca)) : clientes;
+
+  if(clientes.length===0){ lista.innerHTML = '<div class="vazio">Nenhum cliente cadastrado ainda.</div>'; return; }
+  if(filtrados.length===0){ lista.innerHTML = '<div class="vazio">Nenhum cliente encontrado para essa busca.</div>'; return; }
+
+  lista.innerHTML = filtrados.map(c=>`
+    <div class="lista-item">
+      <div>
+        <div class="principal">${escapeHtml(c.nome)}${c.categoria? ' <span class="selo selo-pendente" style="background:var(--cinza-bg);color:var(--cinza-texto);">'+escapeHtml(c.categoria)+'</span>':''}</div>
+        <div class="secundario">${escapeHtml(c.telefone||'')}${c.endereco? ' · '+escapeHtml(c.endereco):''}${c.proximaRevisao? ' · Revisão: '+formatarData(c.proximaRevisao):''}</div>
+      </div>
+      <div class="acoes">
+        ${c.telefone? `<a class="btn btn-fantasma" href="tel:${c.telefone.replace(/\D/g,'')}" style="text-decoration:none;">Ligar</a>`:''}
+        <button class="btn btn-fantasma" onclick="verHistoricoCliente('${c.id}')">Histórico</button>
+        <button class="btn btn-fantasma" onclick="editarCliente('${c.id}')">Editar</button>
+        <button class="btn btn-vermelho" onclick="removerCliente('${c.id}')">Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function verHistoricoCliente(id){
+  const c = clientes.find(c=>c.id===id);
+  if(!c) return;
+  const historico = orcamentos.filter(o=>o.clienteId===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const linhas = historico.length===0
+    ? '<div class="vazio">Nenhum orçamento registrado para este cliente ainda.</div>'
+    : historico.map(o=>`
+        <div class="modal-linha"><span>${formatarData(o.data)} · ${rotuloStatus(o.status)}</span><span>${formatarMoeda(o.total)}</span></div>
+      `).join('');
+  document.getElementById('modalConteudo').innerHTML = `
+    <div style="font-size:13px;color:#6B6B68;margin-bottom:10px;">Histórico de <strong style="color:#111;">${escapeHtml(c.nome)}</strong></div>
+    ${linhas}
+  `;
+  document.querySelector('.btn-imprimir').style.display='none';
+  document.querySelector('.btn-whatsapp').style.display='none';
+  document.querySelector('.btn-email').style.display='none';
+  document.getElementById('modalNota').classList.add('aberto');
+}
+
+function preencherSelectClientes(){
+  const opcoes = '<option value="">Selecione um cliente</option>' +
+    clientes.map(c=>`<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
+  document.getElementById('orcCliente').innerHTML = opcoes;
+  const selAgenda = document.getElementById('agendaCliente');
+  if(selAgenda) selAgenda.innerHTML = opcoes;
+}
+
+function preencherSelectEstoque(){
+  const sel = document.getElementById('selecionarEstoque');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">+ Adicionar do estoque...</option>' +
+    estoque.map(e=>`<option value="${e.id}">${escapeHtml(e.nome)} (${e.qtd} ${escapeHtml(e.unidade||'un')} em estoque)</option>`).join('');
+}
+
+function adicionarItemDoEstoque(){
+  const sel = document.getElementById('selecionarEstoque');
+  const id = sel.value;
+  if(!id) return;
+  const item = estoque.find(e=>e.id===id);
+  if(item){
+    const valor = item.precoVenda || item.custo || '';
+    adicionarLinhaItem(item.nome, 1, valor, 'Material');
+  }
+  sel.value='';
+}
+
+// ---------- ORÇAMENTOS ----------
+function adicionarLinhaItem(descricao, qtd, valor, tipo){
+  itemCount++;
+  const wrapper = document.createElement('div');
+  wrapper.id = 'item-wrap-'+itemCount;
+  wrapper.innerHTML = `
+    <div class="item-linha" id="item-${itemCount}">
+      <input type="text" placeholder="Descrição do serviço/material" class="item-desc" list="datalistServicos" value="${descricao?escapeHtml(descricao):''}" oninput="preencherPrecoServico(this); atualizarTotal();">
+      <select class="item-tipo" onchange="atualizarTotal()">
+        <option value="Mão de obra" ${tipo!=='Material'?'selected':''}>Mão de obra</option>
+        <option value="Material" ${tipo==='Material'?'selected':''}>Material</option>
+      </select>
+      <input type="number" placeholder="Qtd" class="item-qtd" value="${qtd||1}" min="1" oninput="atualizarTotal()">
+      <input type="number" placeholder="Valor unit." class="item-valor" step="0.01" value="${valor||''}" oninput="atualizarTotal()">
+      <button class="remover-item" onclick="removerLinhaItem(${itemCount})">×</button>
+    </div>
+    <div class="dica-preco-servico" id="dica-${itemCount}" style="display:none;font-size:11px;color:var(--cinza-texto);margin:-2px 0 8px;"></div>
+  `;
+  document.getElementById('itensOrcamento').appendChild(wrapper);
+  atualizarTotal();
+}
+function preencherPrecoServico(inputDesc){
+  const nome = inputDesc.value.trim().toLowerCase();
+  const servico = catalogoServicos.find(s=>s.nome.toLowerCase()===nome);
+  const linha = inputDesc.closest('.item-linha');
+  const idNum = linha.id.replace('item-','');
+  const dica = document.getElementById('dica-'+idNum);
+  if(servico){
+    const valorPadrao = servico.precoMinimo!==undefined ? servico.precoMinimo : servico.preco;
+    linha.querySelector('.item-valor').value = valorPadrao.toFixed(2);
+    linha.querySelector('.item-tipo').value = 'Mão de obra';
+    if(dica && servico.precoMinimo!==undefined){
+      dica.style.display='block';
+      dica.innerHTML = `Preço mínimo aplicado: ${formatarMoeda(servico.precoMinimo)} · <span style="color:var(--verde);text-decoration:underline;cursor:pointer;" onclick="usarPrecoServico(this, ${servico.preco})">usar médio (${formatarMoeda(servico.preco)})</span>`;
+    }
+  } else if(dica){
+    dica.style.display='none';
+    dica.innerHTML='';
+  }
+}
+function usarPrecoServico(span, preco){
+  const dica = span.closest('.dica-preco-servico');
+  const linhaItem = dica.previousElementSibling;
+  linhaItem.querySelector('.item-valor').value = preco.toFixed(2);
+  atualizarTotal();
+}
+function removerLinhaItem(id){
+  const el = document.getElementById('item-wrap-'+id);
+  if(el) el.remove();
+  atualizarTotal();
+}
+function calcularDeslocamentoOrcamento(){
+  const km = parseFloat(document.getElementById('orcKm').value) || 0;
+  const valorPorKm = parseFloat(document.getElementById('orcValorPorKm').value) || 0;
+  document.getElementById('orcValorDeslocamento').value = (km*valorPorKm).toFixed(2);
+  atualizarTotal();
+}
+
+function calcularDesconto(subtotal){
+  const tipo = document.getElementById('orcTipoDesconto').value;
+  const valor = parseFloat(document.getElementById('orcValorDescontoInput').value) || 0;
+  if(!tipo || valor<=0) return 0;
+  if(tipo==='percentual') return subtotal * (valor/100);
+  return valor;
+}
+
+function atualizarTotal(){
+  let subtotal = 0;
+  let subtotalMaoDeObra = 0;
+  let subtotalMaterial = 0;
+  document.querySelectorAll('#itensOrcamento .item-linha').forEach(linha=>{
+    const qtd = parseFloat(linha.querySelector('.item-qtd').value) || 0;
+    const valor = parseFloat(linha.querySelector('.item-valor').value) || 0;
+    const tipo = linha.querySelector('.item-tipo').value;
+    const valorLinha = qtd*valor;
+    subtotal += valorLinha;
+    if(tipo==='Material') subtotalMaterial += valorLinha; else subtotalMaoDeObra += valorLinha;
+  });
+  const valorDeslocamento = parseFloat(document.getElementById('orcValorDeslocamento').value) || 0;
+  subtotal += valorDeslocamento;
+  subtotalMaoDeObra += valorDeslocamento;
+  const desconto = calcularDesconto(subtotal);
+  const total = Math.max(subtotal - desconto, 0);
+  document.getElementById('orcTotal').textContent = formatarMoeda(total);
+  const elSub = document.getElementById('subtotalTipos');
+  if(elSub){
+    elSub.innerHTML = `Mão de obra: ${formatarMoeda(subtotalMaoDeObra)} · Material: ${formatarMoeda(subtotalMaterial)}`;
+  }
+}
+
+async function salvarOrcamento(){
+  const clienteId = document.getElementById('orcCliente').value;
+  const data = document.getElementById('orcData').value;
+  if(!clienteId){ alert('Selecione um cliente.'); return; }
+
+  const itens = [];
+  document.querySelectorAll('#itensOrcamento .item-linha').forEach(linha=>{
+    const descricao = linha.querySelector('.item-desc').value.trim();
+    const qtd = parseFloat(linha.querySelector('.item-qtd').value)||0;
+    const valor = parseFloat(linha.querySelector('.item-valor').value)||0;
+    const tipo = linha.querySelector('.item-tipo').value;
+    if(descricao) itens.push({descricao, qtd, valor, tipo});
+  });
+  const km = parseFloat(document.getElementById('orcKm').value)||0;
+  const valorDeslocamento = parseFloat(document.getElementById('orcValorDeslocamento').value)||0;
+  const diluirDeslocamento = document.getElementById('orcDiluirDeslocamento').checked;
+  if(itens.length===0 && valorDeslocamento===0){ alert('Adicione ao menos um item ou um valor de deslocamento.'); return; }
+
+  const tipoDesconto = document.getElementById('orcTipoDesconto').value;
+  const valorDescontoInput = parseFloat(document.getElementById('orcValorDescontoInput').value)||0;
+  const recorrente = document.getElementById('orcRecorrente').checked;
+  const validadeDias = parseFloat(document.getElementById('orcValidadeDias').value)||0;
+  const subtotal = itens.reduce((s,i)=>s+i.qtd*i.valor,0) + valorDeslocamento;
+  const desconto = !tipoDesconto || valorDescontoInput<=0 ? 0 : (tipoDesconto==='percentual' ? subtotal*(valorDescontoInput/100) : valorDescontoInput);
+  const total = Math.max(subtotal - desconto, 0);
+
+  const editandoId = document.getElementById('orcEditandoId').value;
+  if(editandoId){
+    const o = orcamentos.find(o=>o.id===editandoId);
+    if(o){
+      Object.assign(o, {clienteId, data: data || o.data, itens, km, valorDeslocamento, diluirDeslocamento, tipoDesconto, valorDescontoInput, desconto, total, recorrente, validadeDias});
+    }
+    cancelarEdicaoOrcamento();
+  } else {
+    const proximoNumero = orcamentos.reduce((max,o)=>Math.max(max, o.numero||0), 0) + 1;
+    orcamentos.push({
+      id:gerarId(), numero:proximoNumero, clienteId, data: data || new Date().toISOString().slice(0,10),
+      itens, km, valorDeslocamento, diluirDeslocamento, tipoDesconto, valorDescontoInput, desconto, total, recorrente, validadeDias, status:'pendente'
+    });
+    await baixarEstoquePorItens(itens);
+    document.getElementById('orcCliente').value='';
+    document.getElementById('orcData').value='';
+    document.getElementById('itensOrcamento').innerHTML='';
+    document.getElementById('orcKm').value='';
+    document.getElementById('orcValorDeslocamento').value='';
+    document.getElementById('orcDiluirDeslocamento').checked=true;
+    document.getElementById('orcTipoDesconto').value='';
+    document.getElementById('orcValorDescontoInput').value='';
+    document.getElementById('orcRecorrente').checked=false;
+    document.getElementById('orcValidadeDias').value='';
+    document.getElementById('orcTotal').textContent = formatarMoeda(0);
+  }
+  await salvarOrcamentos();
+  renderOrcamentos();
+  mostrarConfirmacao('Orçamento salvo');
+}
+
+async function baixarEstoquePorItens(itens){
+  let baixou = false;
+  itens.forEach(i=>{
+    if(i.tipo!=='Material') return;
+    const item = estoque.find(e=>e.nome.toLowerCase()===i.descricao.trim().toLowerCase());
+    if(item){ item.qtd = Math.max(0, item.qtd - i.qtd); baixou = true; }
+  });
+  if(baixou){ await salvarEstoque(); renderEstoque(); }
+}
+
+function editarOrcamento(id){
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('orcEditandoId').value = id;
+  document.getElementById('orcCliente').value = o.clienteId;
+  document.getElementById('orcData').value = o.data;
+  document.getElementById('itensOrcamento').innerHTML = '';
+  o.itens.forEach(i=>adicionarLinhaItem(i.descricao, i.qtd, i.valor, i.tipo));
+  document.getElementById('orcKm').value = o.km||'';
+  document.getElementById('orcValorDeslocamento').value = o.valorDeslocamento||'';
+  document.getElementById('orcDiluirDeslocamento').checked = o.diluirDeslocamento!==false;
+  document.getElementById('orcTipoDesconto').value = o.tipoDesconto||'';
+  document.getElementById('orcValorDescontoInput').value = o.valorDescontoInput||'';
+  document.getElementById('orcRecorrente').checked = !!o.recorrente;
+  document.getElementById('orcValidadeDias').value = o.validadeDias||'';
+  document.getElementById('tituloFormOrcamento').textContent = 'Editar orçamento nº '+(o.numero||'');
+  document.getElementById('btnSalvarOrcamento').textContent = 'Salvar alterações';
+  document.getElementById('btnCancelarEdicaoOrcamento').style.display='block';
+  atualizarTotal();
+  document.getElementById('painel-orcamentos').scrollIntoView({behavior:'smooth'});
+}
+
+function duplicarOrcamento(id){
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+  document.getElementById('orcEditandoId').value = '';
+  document.getElementById('orcCliente').value = o.clienteId;
+  document.getElementById('orcData').value = new Date().toISOString().slice(0,10);
+  document.getElementById('itensOrcamento').innerHTML = '';
+  o.itens.forEach(i=>adicionarLinhaItem(i.descricao, i.qtd, i.valor, i.tipo));
+  document.getElementById('orcKm').value = o.km||'';
+  document.getElementById('orcValorDeslocamento').value = o.valorDeslocamento||'';
+  document.getElementById('orcDiluirDeslocamento').checked = o.diluirDeslocamento!==false;
+  document.getElementById('orcTipoDesconto').value = o.tipoDesconto||'';
+  document.getElementById('orcValorDescontoInput').value = o.valorDescontoInput||'';
+  document.getElementById('orcRecorrente').checked = !!o.recorrente;
+  document.getElementById('orcValidadeDias').value = o.validadeDias||'';
+  document.getElementById('tituloFormOrcamento').textContent = 'Novo orçamento (duplicado de #'+(o.numero||'')+')';
+  document.getElementById('btnSalvarOrcamento').textContent = 'Salvar orçamento';
+  document.getElementById('btnCancelarEdicaoOrcamento').style.display='none';
+  atualizarTotal();
+  document.getElementById('painel-orcamentos').scrollIntoView({behavior:'smooth'});
+  mostrarConfirmacao('Orçamento duplicado — ajuste e salve');
+}
+
+function cancelarEdicaoOrcamento(){
+  document.getElementById('orcEditandoId').value='';
+  document.getElementById('orcCliente').value='';
+  document.getElementById('orcData').value='';
+  document.getElementById('itensOrcamento').innerHTML='';
+  document.getElementById('orcKm').value='';
+  document.getElementById('orcValorDeslocamento').value='';
+  document.getElementById('orcDiluirDeslocamento').checked=true;
+  document.getElementById('orcTipoDesconto').value='';
+  document.getElementById('orcValorDescontoInput').value='';
+  document.getElementById('orcRecorrente').checked=false;
+  document.getElementById('orcValidadeDias').value='';
+  document.getElementById('orcTotal').textContent = formatarMoeda(0);
+  document.getElementById('tituloFormOrcamento').textContent = 'Novo orçamento';
+  document.getElementById('btnSalvarOrcamento').textContent = 'Salvar orçamento';
+  document.getElementById('btnCancelarEdicaoOrcamento').style.display='none';
+}
+
+async function mudarStatusOrcamento(id, status){
+  const o = orcamentos.find(o=>o.id===id);
+  if(o){ o.status = status; await salvarOrcamentos(); renderOrcamentos(); if(typeof renderFinanceiro==='function') renderFinanceiro(); }
+}
+
+async function removerOrcamento(id){
+  if(!confirm('Remover este orçamento?')) return;
+  orcamentos = orcamentos.filter(o=>o.id!==id);
+  await salvarOrcamentos();
+  renderOrcamentos();
+}
+
+function nomeCliente(id){
+  const c = clientes.find(c=>c.id===id);
+  return c ? c.nome : '(cliente removido)';
+}
+
+function renderOrcamentos(){
+  const lista = document.getElementById('listaOrcamentos');
+  if(orcamentos.length===0){ lista.innerHTML = '<div class="vazio">Nenhum orçamento criado ainda.</div>'; return; }
+  const buscaEl = document.getElementById('buscaOrcamentos');
+  const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  let ordenados = [...orcamentos].sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+  if(busca) ordenados = ordenados.filter(o=>nomeCliente(o.clienteId).toLowerCase().includes(busca));
+  if(ordenados.length===0){ lista.innerHTML = '<div class="vazio">Nenhum orçamento encontrado para essa busca.</div>'; return; }
+  const hoje = new Date().toISOString().slice(0,10);
+  lista.innerHTML = ordenados.map(o=>{
+    const vencido = o.status==='aprovado' && !o.pago && o.data && o.data < hoje;
+    return `
+    <div class="lista-item">
+      <div>
+        <div class="principal">${o.numero?'#'+o.numero+' · ':''}${escapeHtml(nomeCliente(o.clienteId))} · ${formatarMoeda(o.total)}</div>
+        <div class="secundario">${formatarData(o.data)} · <span class="selo selo-${o.status}">${rotuloStatus(o.status)}</span>${o.status==='aprovado' ? (o.pago? ' · <span style="color:var(--verde);">Pago</span>' : ' · <span style="color:var(--vermelho);">A receber</span>') : ''}${o.recorrente? ' · <span style="color:var(--verde);">Recorrente</span>':''}${vencido? ' · <span style="color:var(--vermelho);font-weight:600;">Vencido</span>':''}</div>
+      </div>
+      <div class="acoes">
+        <button class="btn btn-fantasma" onclick="verNota('${o.id}')">Ver nota</button>
+        <button class="btn btn-fantasma" onclick="editarOrcamento('${o.id}')">Editar</button>
+        <button class="btn btn-fantasma" onclick="duplicarOrcamento('${o.id}')">Duplicar</button>
+        <select onchange="mudarStatusOrcamento('${o.id}', this.value)" style="width:auto;font-size:16px;padding:8px;min-height:36px;">
+          <option value="pendente" ${o.status==='pendente'?'selected':''}>Pendente</option>
+          <option value="aprovado" ${o.status==='aprovado'?'selected':''}>Aprovado</option>
+          <option value="recusado" ${o.status==='recusado'?'selected':''}>Recusado</option>
+        </select>
+        ${o.status==='aprovado' ? `<button class="btn btn-fantasma" onclick="alternarPago('${o.id}')">${o.pago?'Marcar não pago':'Marcar pago'}</button>` : ''}
+        <button class="btn btn-vermelho" onclick="removerOrcamento('${o.id}')">Remover</button>
+      </div>
+    </div>
+  `;}).join('');
+}
+async function alternarPago(id){
+  const o = orcamentos.find(o=>o.id===id);
+  if(o){ o.pago = !o.pago; await salvarOrcamentos(); renderOrcamentos(); renderFinanceiro(); renderDashboard();
+  triggerSyncSheets(); }
+}
+function rotuloStatus(s){
+  return s==='aprovado' ? 'Aprovado' : s==='recusado' ? 'Recusado' : 'Pendente';
+}
+
+function verNota(id){
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+  const diluir = o.diluirDeslocamento && o.valorDeslocamento>0 && o.itens.length>0;
+  const acrescimoPorItem = diluir ? o.valorDeslocamento/o.itens.length : 0;
+  const linhas = o.itens.map(i=>`
+    <div class="modal-linha"><span>${escapeHtml(i.descricao)} (${i.qtd}x)</span><span>${formatarMoeda(i.qtd*i.valor + acrescimoPorItem)}</span></div>
+  `).join('');
+  const linhaDesconto = o.desconto ? `
+    <div class="modal-linha"><span>Desconto</span><span>- ${formatarMoeda(o.desconto)}</span></div>
+  ` : '';
+  let validadeTexto = '';
+  if(o.validadeDias){
+    const dataOrc = new Date(o.data+'T00:00:00');
+    dataOrc.setDate(dataOrc.getDate()+o.validadeDias);
+    validadeTexto = ` · Válido até ${formatarData(dataOrc.toISOString().slice(0,10))}`;
+  }
+  document.getElementById('modalConteudo').innerHTML = `
+    <div style="font-size:13px;color:#6B6B68;margin-bottom:10px;">
+      Cliente: <strong style="color:#111;">${escapeHtml(nomeCliente(o.clienteId))}</strong><br>
+      ${o.numero?'Orçamento nº '+o.numero+'<br>':''}Data: ${formatarData(o.data)} · Status: ${rotuloStatus(o.status)}${validadeTexto}
+    </div>
+    ${linhas}
+    ${linhaDesconto}
+    <div class="modal-total"><span>Total</span><span>${formatarMoeda(o.total)}</span></div>
+  `;
+  document.querySelector('.btn-imprimir').style.display='block';
+  document.querySelector('.btn-whatsapp').style.display='block';
+  document.querySelector('.btn-email').style.display='block';
+  document.getElementById('modalNota').dataset.orcamentoId = o.id;
+  document.getElementById('modalNota').classList.add('aberto');
+
+  document.getElementById('padAssinatura').style.display='none';
+  if(o.assinatura){
+    document.getElementById('assinaturaExistente').style.display='block';
+    document.getElementById('assinaturaNova').style.display='none';
+    document.getElementById('imgAssinaturaExistente').src = o.assinatura;
+    const dt = new Date(o.assinadoEm);
+    document.getElementById('textoAssinadoEm').textContent = 'Assinado em '+dt.toLocaleDateString('pt-BR')+' às '+dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  } else {
+    document.getElementById('assinaturaExistente').style.display='none';
+    document.getElementById('assinaturaNova').style.display='block';
+  }
+}
+
+// ---------- ASSINATURA DIGITAL ----------
+let ctxAssinatura = null;
+let desenhando = false;
+
+function abrirPadAssinatura(){
+  document.getElementById('padAssinatura').style.display='block';
+  document.getElementById('assinaturaNova').style.display='none';
+  const canvas = document.getElementById('canvasAssinatura');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  ctxAssinatura = canvas.getContext('2d');
+  ctxAssinatura.lineWidth = 2.5;
+  ctxAssinatura.lineCap = 'round';
+  ctxAssinatura.strokeStyle = '#111111';
+
+  function posicao(evento){
+    const rect = canvas.getBoundingClientRect();
+    const ponto = evento.touches ? evento.touches[0] : evento;
+    return { x: ponto.clientX-rect.left, y: ponto.clientY-rect.top };
+  }
+  function iniciar(evento){ desenhando=true; const p=posicao(evento); ctxAssinatura.beginPath(); ctxAssinatura.moveTo(p.x,p.y); evento.preventDefault(); }
+  function mover(evento){ if(!desenhando) return; const p=posicao(evento); ctxAssinatura.lineTo(p.x,p.y); ctxAssinatura.stroke(); evento.preventDefault(); }
+  function parar(){ desenhando=false; }
+
+  canvas.onmousedown = iniciar; canvas.onmousemove = mover; canvas.onmouseup = parar; canvas.onmouseleave = parar;
+  canvas.ontouchstart = iniciar; canvas.ontouchmove = mover; canvas.ontouchend = parar;
+}
+
+function limparAssinatura(){
+  const canvas = document.getElementById('canvasAssinatura');
+  if(ctxAssinatura) ctxAssinatura.clearRect(0,0,canvas.width,canvas.height);
+}
+
+async function confirmarAssinatura(){
+  const canvas = document.getElementById('canvasAssinatura');
+  const dadosVazios = ctxAssinatura.getImageData(0,0,canvas.width,canvas.height).data.every(v=>v===0);
+  if(dadosVazios){ alert('Peça pro cliente assinar antes de confirmar.'); return; }
+
+  const id = document.getElementById('modalNota').dataset.orcamentoId;
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+
+  o.assinatura = canvas.toDataURL('image/png');
+  o.assinadoEm = new Date().toISOString();
+  if(o.status==='pendente') o.status = 'aprovado';
+  await salvarOrcamentos();
+  renderOrcamentos();
+  renderFinanceiro();
+  verNota(id);
+  mostrarConfirmacao('Assinatura salva');
+}
+
+function enviarNotaWhatsapp(){
+  const id = document.getElementById('modalNota').dataset.orcamentoId;
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+  const c = clientes.find(c=>c.id===o.clienteId);
+  const diluir = o.diluirDeslocamento && o.valorDeslocamento>0 && o.itens.length>0;
+  const acrescimoPorItem = diluir ? o.valorDeslocamento/o.itens.length : 0;
+
+  let texto = `*EletroCore — Manutenções Elétricas*\n\n`;
+  texto += `Orçamento para: ${c?c.nome:''}\nData: ${formatarData(o.data)}\n\n`;
+  o.itens.forEach(i=>{
+    texto += `${i.descricao} (${i.qtd}x) — ${formatarMoeda(i.qtd*i.valor + acrescimoPorItem)}\n`;
+  });
+  if(o.desconto){ texto += `Desconto — - ${formatarMoeda(o.desconto)}\n`; }
+  texto += `\n*Total: ${formatarMoeda(o.total)}*`;
+
+  const telefone = c && c.telefone ? c.telefone.replace(/\D/g,'') : '';
+  const url = `https://wa.me/${telefone?('55'+telefone):''}?text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+}
+
+async function enviarNotaEmail(){
+  const id = document.getElementById('modalNota').dataset.orcamentoId;
+  const o = orcamentos.find(o=>o.id===id);
+  if(!o) return;
+  const c = clientes.find(c=>c.id===o.clienteId);
+  if(!c || !c.email){ alert('Esse cliente não tem e-mail cadastrado. Adicione o e-mail no cadastro do cliente primeiro.'); return; }
+  if(!urlSheets){ alert('Configure a URL do Google Apps Script em Financeiro antes de enviar por e-mail.'); return; }
+
+  const diluir = o.diluirDeslocamento && o.valorDeslocamento>0 && o.itens.length>0;
+  const acrescimoPorItem = diluir ? o.valorDeslocamento/o.itens.length : 0;
+
+  let corpo = `Olá, ${c.nome}!\n\nSegue o orçamento da EletroCore — Manutenções Elétricas:\n\n`;
+  o.itens.forEach(i=>{
+    corpo += `${i.descricao} (${i.qtd}x) — ${formatarMoeda(i.qtd*i.valor + acrescimoPorItem)}\n`;
+  });
+  if(o.desconto){ corpo += `Desconto — - ${formatarMoeda(o.desconto)}\n`; }
+  corpo += `\nTotal: ${formatarMoeda(o.total)}\n\nQualquer dúvida, estou à disposição.`;
+
+  try{
+    await fetch(urlSheets, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ acao:'enviarEmail', para:c.email, assunto:`Orçamento EletroCore nº ${o.numero||''}`, corpo })
+    });
+    mostrarConfirmacao('E-mail enviado (confira a caixa de saída se não chegar)');
+  }catch(e){
+    alert('Não foi possível enviar. Confira a URL do Apps Script em Financeiro.');
+  }
+}
+
+function fecharModal(){
+  document.getElementById('modalNota').classList.remove('aberto');
+}
+
+// ---------- FLUXO DE CAIXA ----------
+async function adicionarCaixa(){
+  const tipo = document.getElementById('caixaTipo').value;
+  const valor = parseFloat(document.getElementById('caixaValor').value);
+  const data = document.getElementById('caixaData').value || new Date().toISOString().slice(0,10);
+  const categoria = document.getElementById('caixaCategoria').value.trim();
+  const pagamento = document.getElementById('caixaPagamento').value;
+  const descricao = document.getElementById('caixaDescricao').value.trim();
+
+  if(!valor || valor<=0){ alert('Informe um valor válido.'); return; }
+
+  caixa.push({id:gerarId(), tipo, valor, data, categoria, pagamento, descricao});
+  await salvarCaixa();
+
+  document.getElementById('caixaValor').value='';
+  document.getElementById('caixaCategoria').value='';
+  document.getElementById('caixaPagamento').value='';
+  document.getElementById('caixaDescricao').value='';
+
+  renderCaixa();
+  renderDashboard();
+  triggerSyncSheets();
+  mostrarConfirmacao('Lançamento salvo');
+}
+
+async function removerCaixa(id){
+  if(!confirm('Remover este lançamento?')) return;
+  caixa = caixa.filter(c=>c.id!==id);
+  await salvarCaixa();
+  renderCaixa();
+}
+
+function renderCaixa(){
+  const entradas = caixa.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+c.valor,0);
+  const saidas = caixa.filter(c=>c.tipo==='saida').reduce((s,c)=>s+c.valor,0);
+  document.getElementById('resumoEntradas').textContent = formatarMoeda(entradas);
+  document.getElementById('resumoSaidas').textContent = formatarMoeda(saidas);
+  document.getElementById('resumoSaldo').textContent = formatarMoeda(entradas-saidas);
+
+  const lista = document.getElementById('listaCaixa');
+  if(caixa.length===0){ lista.innerHTML = '<div class="vazio">Nenhum lançamento ainda.</div>'; return; }
+  const ordenados = [...caixa].sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+  lista.innerHTML = ordenados.map(c=>`
+    <div class="lista-item">
+      <div>
+        <div class="principal">${escapeHtml(c.descricao||c.categoria||'Lançamento')} · <span class="${c.tipo==='entrada'?'verde-txt':'vermelho-txt'}">${c.tipo==='entrada'?'+':'-'}${formatarMoeda(c.valor)}</span></div>
+        <div class="secundario">${formatarData(c.data)}${c.categoria?' · '+escapeHtml(c.categoria):''}${c.pagamento?' · '+escapeHtml(c.pagamento):''}</div>
+      </div>
+      <div class="acoes">
+        <button class="btn btn-vermelho" onclick="removerCaixa('${c.id}')">Remover</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---------- CALCULADORA ELÉTRICA ----------
+
+// Disjuntores comerciais padrão (A)
+const DISJUNTORES_PADRAO = [6,10,16,20,25,32,40,50,63,70,80,100];
+
+// Capacidade de condução aproximada por bitola (mm²) — NBR 5410, método B1, PVC, 3 condutores carregados
+const BITOLAS_FIO = [
+  {mm:1.5, amp:17.5},
+  {mm:2.5, amp:24},
+  {mm:4,   amp:32},
+  {mm:6,   amp:41},
+  {mm:10,  amp:57},
+  {mm:16,  amp:76},
+  {mm:25,  amp:96},
+  {mm:35,  amp:119},
+];
+
+function calcularDisjuntorFio(){
+  const potencia = parseFloat(document.getElementById('calcPotencia').value);
+  const tensaoSel = document.getElementById('calcTensao').value;
+  if(!potencia || potencia<=0){ alert('Informe a potência total em Watts.'); return; }
+
+  let corrente, tensaoTexto;
+  if(tensaoSel==='127'){
+    corrente = potencia/127; tensaoTexto='127V monofásico';
+  } else if(tensaoSel==='220-mono'){
+    corrente = potencia/220; tensaoTexto='220V monofásico';
+  } else if(tensaoSel==='220-tri'){
+    corrente = potencia/(Math.sqrt(3)*220); tensaoTexto='220V trifásico';
+  } else {
+    corrente = potencia/(Math.sqrt(3)*380); tensaoTexto='380V trifásico';
+  }
+
+  const disjuntor = DISJUNTORES_PADRAO.find(d=>d>=corrente) || DISJUNTORES_PADRAO[DISJUNTORES_PADRAO.length-1];
+  const fio = BITOLAS_FIO.find(f=>f.amp>=disjuntor) || BITOLAS_FIO[BITOLAS_FIO.length-1];
+
+  let linhaQueda = '';
+  const distancia = parseFloat(document.getElementById('calcDistanciaDisjuntor').value)||0;
+  let tensaoNum = tensaoSel==='127'?127:(tensaoSel==='380-tri'?380:220);
+  if(distancia>0){
+    const quedaV = (2*0.0178*distancia*corrente)/fio.mm;
+    const quedaPct = (quedaV/tensaoNum)*100;
+    const corPct = quedaPct>4 ? 'var(--vermelho)' : 'var(--verde)';
+    linhaQueda = `<div class="resultado-linha"><span class="rot">Queda de tensão estimada</span><span class="val" style="color:${corPct};">${quedaV.toFixed(1)} V (${quedaPct.toFixed(1)}%)</span></div>`;
+    if(quedaPct>4){
+      linhaQueda += `<div style="font-size:11px;color:var(--vermelho);margin-top:4px;">Acima de 4% — considere uma bitola de fio maior pra essa distância.</div>`;
+    }
+  }
+
+  document.getElementById('resultadoDisjuntor').style.display='block';
+  document.getElementById('resultadoDisjuntor').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Tensão</span><span class="val">${tensaoTexto}</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente calculada</span><span class="val">${corrente.toFixed(1)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Disjuntor sugerido</span><span class="val">${disjuntor} A</span></div>
+    <div class="resultado-linha"><span class="rot">Bitola do fio sugerida</span><span class="val">${fio.mm} mm²</span></div>
+    ${linhaQueda}
+  `;
+  salvarHistoricoCalculo('Disjuntor/fio', `${potencia}W, ${tensaoTexto}${distancia?', '+distancia+'m':''} → ${disjuntor}A, ${fio.mm}mm²`);
+}
+
+function calcularMaterial(){
+  const tomadas = parseFloat(document.getElementById('calcTomadas').value)||0;
+  const luz = parseFloat(document.getElementById('calcLuz').value)||0;
+  const distancia = parseFloat(document.getElementById('calcDistancia').value)||0;
+  const margemPct = parseFloat(document.getElementById('calcMargem').value)||0;
+
+  const totalPontos = tomadas + luz;
+  if(totalPontos===0 || distancia===0){ alert('Informe ao menos os pontos e a distância média até o quadro.'); return; }
+
+  const fator = 1 + (margemPct/100);
+  const metrosFioEstimado = Math.ceil(totalPontos * distancia * fator);
+  const caixasEstimadas = totalPontos;
+  const conectoresEstimados = Math.ceil(totalPontos * 2 * fator);
+  const fitaIsolanteRolos = Math.ceil(totalPontos/15) || 1;
+
+  document.getElementById('resultadoMaterial').style.display='block';
+  document.getElementById('resultadoMaterial').innerHTML = `
+    <table class="tabela-material">
+      <tr><th>Material</th><th>Estimativa</th></tr>
+      <tr><td>Fio/cabo (metros)</td><td>${metrosFioEstimado} m</td></tr>
+      <tr><td>Caixinhas de embutir (4x2)</td><td>${caixasEstimadas} un</td></tr>
+      <tr><td>Conectores/terminais</td><td>${conectoresEstimados} un</td></tr>
+      <tr><td>Fita isolante</td><td>${fitaIsolanteRolos} rolo(s)</td></tr>
+    </table>
+    <div style="font-size:11px;color:#6B6B68;margin-top:8px;">Estimativa simplificada considerando ${totalPontos} pontos e ${margemPct}% de folga. Não considera passagem por eletrodutos com curvas ou trechos verticais longos.</div>
+  `;
+  salvarHistoricoCalculo('Material para obra', `${totalPontos} pontos, ${distancia}m → ${metrosFioEstimado}m de fio, ${caixasEstimadas} caixas`);
+}
+
+// ---------- AGENDA ----------
+async function adicionarAgenda(){
+  const clienteId = document.getElementById('agendaCliente').value;
+  const servico = document.getElementById('agendaServico').value.trim();
+  const data = document.getElementById('agendaData').value;
+  const hora = document.getElementById('agendaHora').value;
+  if(!clienteId || !data){ alert('Selecione o cliente e a data.'); return; }
+
+  agenda.push({id:gerarId(), clienteId, servico, data, hora, status:'agendado'});
+  await salvarAgenda();
+  document.getElementById('agendaServico').value='';
+  document.getElementById('agendaData').value='';
+  document.getElementById('agendaHora').value='';
+  renderAgenda();
+  renderDashboard();
+  triggerSyncSheets();
+  criarEventoGoogleCalendar(clienteId, servico, data, hora);
+  mostrarConfirmacao('Agendamento salvo');
+}
+
+async function criarEventoGoogleCalendar(clienteId, servico, data, hora){
+  if(!urlSheets) return;
+  try{
+    await fetch(urlSheets, {
+      method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        acao:'criarEvento',
+        titulo: `${nomeCliente(clienteId)}${servico?' - '+servico:''}`,
+        data, hora: hora||'09:00',
+        descricao: `Agendamento EletroCore${servico?': '+servico:''}`
+      })
+    });
+  }catch(e){}
+}
+
+async function removerAgenda(id){
+  if(!confirm('Remover este agendamento?')) return;
+  agenda = agenda.filter(a=>a.id!==id);
+  await salvarAgenda();
+  renderAgenda();
+  renderDashboard();
+  triggerSyncSheets();
+}
+async function mudarStatusAgenda(id, status){
+  const a = agenda.find(a=>a.id===id);
+  if(a){ a.status=status; await salvarAgenda(); renderAgenda(); renderDashboard();
+  triggerSyncSheets(); }
+}
+function renderAgenda(){
+  const lista = document.getElementById('listaAgenda');
+  if(lista){
+    if(agenda.length===0){ lista.innerHTML = '<div class="vazio">Nenhum agendamento ainda.</div>'; }
+    else{
+      const ordenados = [...agenda].sort((a,b)=> (a.data+(a.hora||'')).localeCompare(b.data+(b.hora||'')));
+      const porData = {};
+      ordenados.forEach(a=>{ (porData[a.data] = porData[a.data]||[]).push(a); });
+      lista.innerHTML = Object.keys(porData).map(data=>`
+        <h3 style="font-size:12px;color:var(--verde);margin:14px 0 4px;">${formatarDataComDia(data)}</h3>
+        ${porData[data].map(a=>`
+        <div class="lista-item">
+          <div>
+            <div class="principal" style="${a.status==='concluido'?'text-decoration:line-through;color:var(--cinza-texto);':''}">${escapeHtml(nomeCliente(a.clienteId))}${a.servico? ' · '+escapeHtml(a.servico):''}</div>
+            <div class="secundario">${a.hora? 'às '+a.hora:''}${a.status==='cancelado'?' · <span style="color:var(--vermelho);">Cancelado</span>':''}${a.status==='concluido'?' · <span style="color:var(--verde);">Concluído</span>':''}</div>
+          </div>
+          <div class="acoes">
+            <select onchange="mudarStatusAgenda('${a.id}', this.value)" style="width:auto;font-size:14px;padding:8px;">
+              <option value="agendado" ${(!a.status||a.status==='agendado')?'selected':''}>Agendado</option>
+              <option value="concluido" ${a.status==='concluido'?'selected':''}>Concluído</option>
+              <option value="cancelado" ${a.status==='cancelado'?'selected':''}>Cancelado</option>
+            </select>
+            <button class="btn btn-vermelho" onclick="removerAgenda('${a.id}')">Remover</button>
+          </div>
+        </div>
+      `).join('')}
+      `).join('');
+    }
+  }
+
+  // revisões preventivas próximas (60 dias)
+  const cartaoRevisoes = document.getElementById('cartaoRevisoes');
+  if(cartaoRevisoes){
+    const hoje = new Date();
+    const limite = new Date(); limite.setDate(hoje.getDate()+60);
+    const proximas = clientes.filter(c=>c.proximaRevisao).filter(c=>{
+      const d = new Date(c.proximaRevisao+'T00:00:00');
+      return d>=new Date(hoje.toISOString().slice(0,10)+'T00:00:00') && d<=limite;
+    }).sort((a,b)=>a.proximaRevisao.localeCompare(b.proximaRevisao));
+    if(proximas.length>0){
+      cartaoRevisoes.style.display='block';
+      document.getElementById('listaRevisoes').innerHTML = proximas.map(c=>`
+        <div class="lista-item">
+          <div>
+            <div class="principal">${escapeHtml(c.nome)}</div>
+            <div class="secundario">Revisão prevista: ${formatarData(c.proximaRevisao)}</div>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      cartaoRevisoes.style.display='none';
+    }
+  }
+}
+
+// ---------- ESTOQUE ----------
+function calcularPrecoVendaEstoque(){
+  const custo = parseFloat(document.getElementById('estoqueCusto').value)||0;
+  const margem = parseFloat(document.getElementById('estoqueMargem').value)||0;
+  if(custo>0){
+    document.getElementById('estoquePrecoVenda').value = (custo*(1+margem/100)).toFixed(2);
+  }
+}
+
+async function adicionarEstoque(){
+  const nome = document.getElementById('estoqueNome').value.trim();
+  const categoria = document.getElementById('estoqueCategoria').value;
+  const unidade = document.getElementById('estoqueUnidade').value.trim();
+  const custo = parseFloat(document.getElementById('estoqueCusto').value)||0;
+  const margem = parseFloat(document.getElementById('estoqueMargem').value)||0;
+  const precoVenda = parseFloat(document.getElementById('estoquePrecoVenda').value)||0;
+  const qtd = parseFloat(document.getElementById('estoqueQtd').value)||0;
+  const minimo = parseFloat(document.getElementById('estoqueMinimo').value)||0;
+  const editandoId = document.getElementById('estoqueEditandoId').value;
+  if(!nome){ alert('Digite o nome do material.'); return; }
+
+  if(editandoId){
+    const item = estoque.find(e=>e.id===editandoId);
+    if(item){ item.nome=nome; item.categoria=categoria; item.unidade=unidade; item.custo=custo; item.margem=margem; item.precoVenda=precoVenda; item.qtd=qtd; item.minimo=minimo; }
+    cancelarEdicaoEstoque();
+  } else {
+    estoque.push({id:gerarId(), nome, categoria, unidade, custo, margem, precoVenda, qtd, minimo, historico:[]});
+    document.getElementById('estoqueNome').value='';
+    document.getElementById('estoqueCategoria').value='Fios e cabos';
+    document.getElementById('estoqueUnidade').value='';
+    document.getElementById('estoqueCusto').value='';
+    document.getElementById('estoqueMargem').value='40';
+    document.getElementById('estoquePrecoVenda').value='';
+    document.getElementById('estoqueQtd').value='';
+    document.getElementById('estoqueMinimo').value='';
+  }
+  await salvarEstoque();
+  renderEstoque();
+  preencherDatalistServicos();
+  preencherSelectEstoque();
+  renderDashboard();
+  triggerSyncSheets();
+  mostrarConfirmacao('Item de estoque salvo');
+}
+
+function editarEstoque(id){
+  const item = estoque.find(e=>e.id===id);
+  if(!item) return;
+  document.getElementById('estoqueEditandoId').value = id;
+  document.getElementById('estoqueNome').value = item.nome||'';
+  document.getElementById('estoqueCategoria').value = item.categoria||'Fios e cabos';
+  document.getElementById('estoqueUnidade').value = item.unidade||'';
+  document.getElementById('estoqueCusto').value = item.custo||'';
+  document.getElementById('estoqueMargem').value = item.margem!==undefined ? item.margem : 40;
+  document.getElementById('estoquePrecoVenda').value = item.precoVenda||'';
+  document.getElementById('estoqueQtd').value = item.qtd||'';
+  document.getElementById('estoqueMinimo').value = item.minimo||'';
+  document.getElementById('tituloFormEstoque').textContent = 'Editar item';
+  document.getElementById('btnSalvarEstoque').textContent = 'Salvar alterações';
+  document.getElementById('btnCancelarEdicaoEstoque').style.display='block';
+  document.getElementById('painel-estoque').scrollIntoView({behavior:'smooth'});
+}
+
+function cancelarEdicaoEstoque(){
+  document.getElementById('estoqueEditandoId').value='';
+  document.getElementById('estoqueNome').value='';
+  document.getElementById('estoqueCategoria').value='Fios e cabos';
+  document.getElementById('estoqueUnidade').value='';
+  document.getElementById('estoqueCusto').value='';
+  document.getElementById('estoqueMargem').value='40';
+  document.getElementById('estoquePrecoVenda').value='';
+  document.getElementById('estoqueQtd').value='';
+  document.getElementById('estoqueMinimo').value='';
+  document.getElementById('tituloFormEstoque').textContent = 'Novo item de estoque';
+  document.getElementById('btnSalvarEstoque').textContent = 'Salvar item';
+  document.getElementById('btnCancelarEdicaoEstoque').style.display='none';
+}
+
+async function removerEstoque(id){
+  if(!confirm('Remover este item?')) return;
+  estoque = estoque.filter(e=>e.id!==id);
+  await salvarEstoque();
+  renderEstoque();
+  preencherDatalistServicos();
+  preencherSelectEstoque();
+}
+async function ajustarEstoque(id, delta){
+  const item = estoque.find(e=>e.id===id);
+  if(item){ item.qtd = Math.max(0, item.qtd+delta); await salvarEstoque(); renderEstoque(); }
+}
+
+async function registrarCompraEstoque(id){
+  const item = estoque.find(e=>e.id===id);
+  if(!item) return;
+  const qtdStr = prompt('Quantidade comprada:');
+  if(qtdStr===null) return;
+  const qtdComprada = parseFloat(qtdStr);
+  if(isNaN(qtdComprada) || qtdComprada<=0){ alert('Quantidade inválida.'); return; }
+  const precoStr = prompt('Valor pago (total da compra, R$) — deixe em branco se não quiser registrar:');
+  const precoTotal = precoStr ? parseFloat(precoStr) : null;
+  const fornecedor = prompt('Fornecedor (opcional):') || '';
+
+  item.qtd = (item.qtd||0) + qtdComprada;
+  if(precoTotal && !isNaN(precoTotal)){
+    item.custo = precoTotal/qtdComprada;
+    if(item.margem){ item.precoVenda = item.custo*(1+item.margem/100); }
+  }
+  if(!item.historico) item.historico = [];
+  item.historico.unshift({data:new Date().toISOString().slice(0,10), qtd:qtdComprada, precoTotal:precoTotal||0, fornecedor});
+  await salvarEstoque();
+  renderEstoque();
+}
+
+function renderEstoque(){
+  const lista = document.getElementById('listaEstoque');
+  const buscaEl = document.getElementById('buscaEstoque');
+  const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  const filtrados = busca ? estoque.filter(e=>e.nome.toLowerCase().includes(busca)) : estoque;
+
+  const baixos = estoque.filter(e=>e.minimo>0 && e.qtd<e.minimo);
+  const alertaEl = document.getElementById('alertaEstoqueBaixo');
+  if(baixos.length>0){
+    alertaEl.style.display='block';
+    document.getElementById('textoAlertaEstoque').textContent = baixos.length===1
+      ? `1 item está abaixo do estoque mínimo: ${baixos[0].nome}`
+      : `${baixos.length} itens estão abaixo do estoque mínimo.`;
+  } else {
+    alertaEl.style.display='none';
+  }
+
+  const valorTotal = estoque.reduce((s,e)=>s+(e.custo||0)*(e.qtd||0),0);
+  const valorTotalVenda = estoque.reduce((s,e)=>s+(e.precoVenda||e.custo||0)*(e.qtd||0),0);
+  document.getElementById('valorTotalEstoque').textContent = valorTotal>0
+    ? `Valor em estoque (custo): ${formatarMoeda(valorTotal)} · Valor de venda: ${formatarMoeda(valorTotalVenda)} · Margem potencial: ${formatarMoeda(valorTotalVenda-valorTotal)}`
+    : '';
+
+  if(estoque.length===0){ lista.innerHTML = '<div class="vazio">Nenhum item cadastrado ainda.</div>'; return; }
+  if(filtrados.length===0){ lista.innerHTML = '<div class="vazio">Nenhum item encontrado para essa busca.</div>'; return; }
+
+  lista.innerHTML = filtrados.map(e=>{
+    const baixo = e.minimo>0 && e.qtd < e.minimo;
+    const ultimaCompra = e.historico && e.historico[0] ? ` · Última compra: ${formatarData(e.historico[0].data)} (${e.historico[0].qtd} ${e.unidade||'un'})` : '';
+    const precoVendaTexto = e.precoVenda ? ` · venda: ${formatarMoeda(e.precoVenda)}${e.margem?' ('+e.margem+'%)':''}` : '';
+    return `
+    <div class="lista-item">
+      <div>
+        <div class="principal">${escapeHtml(e.nome)}${e.categoria? ' <span class="selo selo-pendente" style="background:var(--cinza-bg);color:var(--cinza-texto);">'+escapeHtml(e.categoria)+'</span>':''}</div>
+        <div class="secundario ${baixo?'estoque-baixo':''}">${e.qtd} ${escapeHtml(e.unidade||'un')}${e.minimo>0?' · mínimo: '+e.minimo:''}${e.custo?' · custo: '+formatarMoeda(e.custo):''}${precoVendaTexto}${baixo?' · Repor!':''}${ultimaCompra}</div>
+      </div>
+      <div class="acoes">
+        <button class="btn btn-fantasma" onclick="ajustarEstoque('${e.id}', -1)">-1</button>
+        <button class="btn btn-fantasma" onclick="ajustarEstoque('${e.id}', 1)">+1</button>
+        <button class="btn btn-fantasma" onclick="registrarCompraEstoque('${e.id}')">Registrar compra</button>
+        <button class="btn btn-fantasma" onclick="editarEstoque('${e.id}')">Editar</button>
+        <button class="btn btn-vermelho" onclick="removerEstoque('${e.id}')">Remover</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function pedirReposicaoWhatsapp(){
+  const baixos = estoque.filter(e=>e.minimo>0 && e.qtd<e.minimo);
+  if(baixos.length===0) return;
+  let texto = `*EletroCore — Pedido de reposição*\n\n`;
+  baixos.forEach(e=>{
+    const sugestao = Math.max(e.minimo - e.qtd, e.minimo);
+    texto += `${e.nome} — ${sugestao} ${e.unidade||'un'}\n`;
+  });
+  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+  window.open(url, '_blank');
+}
+
+// ---------- FINANCEIRO ----------
+function renderFinanceiro(){
+  renderResumoMensal();
+  renderGraficoMensal();
+  renderGraficoCategorias();
+  renderContasReceber();
+}
+
+function renderResumoMensal(){
+  const el = document.getElementById('resumoMensalTexto');
+  if(!el) return;
+  const hoje = new Date();
+  const mesAtual = hoje.toISOString().slice(0,7);
+  const mesAnteriorDt = new Date(hoje.getFullYear(), hoje.getMonth()-1, 1);
+  const mesAnterior = mesAnteriorDt.toISOString().slice(0,7);
+
+  const doMes = caixa.filter(c=>(c.data||'').slice(0,7)===mesAtual);
+  const entradas = doMes.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+c.valor,0);
+  const saidas = doMes.filter(c=>c.tipo==='saida').reduce((s,c)=>s+c.valor,0);
+  const saldo = entradas - saidas;
+
+  const doMesAnterior = caixa.filter(c=>(c.data||'').slice(0,7)===mesAnterior);
+  const entradasAnt = doMesAnterior.filter(c=>c.tipo==='entrada').reduce((s,c)=>s+c.valor,0);
+  const saldoAnt = entradasAnt - doMesAnterior.filter(c=>c.tipo==='saida').reduce((s,c)=>s+c.valor,0);
+
+  const orcamentosMes = orcamentos.filter(o=>(o.data||'').slice(0,7)===mesAtual);
+  const aprovadosMes = orcamentosMes.filter(o=>o.status==='aprovado').length;
+
+  function calcularVariacao(atual, anterior){
+    if(anterior===0) return atual>0 ? '+100%' : '0%';
+    const pct = ((atual-anterior)/Math.abs(anterior))*100;
+    const cor = pct>=0 ? 'var(--verde)' : 'var(--vermelho)';
+    return `<span style="color:${cor};">${pct>=0?'+':''}${pct.toFixed(0)}%</span>`;
+  }
+
+  el.innerHTML = `
+    <div class="resultado-linha"><span class="rot">Entradas no mês</span><span class="val verde-txt">${formatarMoeda(entradas)}</span></div>
+    <div class="resultado-linha"><span class="rot">Saídas no mês</span><span class="val vermelho-txt">${formatarMoeda(saidas)}</span></div>
+    <div class="resultado-linha"><span class="rot">Saldo do mês</span><span class="val">${formatarMoeda(saldo)}</span></div>
+    <div class="resultado-linha"><span class="rot">Orçamentos aprovados no mês</span><span class="val">${aprovadosMes}</span></div>
+  `;
+
+  const elComp = document.getElementById('comparativoMensalTexto');
+  if(elComp){
+    elComp.innerHTML = `
+      <div class="resultado-linha"><span class="rot">Entradas vs mês passado (${formatarMoeda(entradasAnt)})</span><span class="val">${calcularVariacao(entradas, entradasAnt)}</span></div>
+      <div class="resultado-linha"><span class="rot">Saldo vs mês passado (${formatarMoeda(saldoAnt)})</span><span class="val">${calcularVariacao(saldo, saldoAnt)}</span></div>
+    `;
+  }
+}
+
+function renderGraficoMensal(){
+  const el = document.getElementById('graficoMensal');
+  if(!el) return;
+  if(caixa.length===0){ el.innerHTML = '<div class="vazio">Sem lançamentos ainda.</div>'; return; }
+
+  const meses = {};
+  caixa.forEach(c=>{
+    const chave = (c.data||'').slice(0,7);
+    if(!chave) return;
+    if(!meses[chave]) meses[chave] = {entrada:0, saida:0};
+    meses[chave][c.tipo] += c.valor;
+  });
+  const chaves = Object.keys(meses).sort().slice(-6);
+  const maior = Math.max(1, ...chaves.map(k=>Math.max(meses[k].entrada, meses[k].saida)));
+  const nomesMes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  el.innerHTML = chaves.map(k=>{
+    const [ano,mes] = k.split('-');
+    const alturaE = Math.round((meses[k].entrada/maior)*90);
+    const alturaS = Math.round((meses[k].saida/maior)*90);
+    return `
+      <div class="mes-coluna">
+        <div class="barras-par">
+          <div class="barra entrada" style="height:${alturaE}px;" title="Entradas: ${formatarMoeda(meses[k].entrada)}"></div>
+          <div class="barra saida" style="height:${alturaS}px;" title="Saídas: ${formatarMoeda(meses[k].saida)}"></div>
+        </div>
+        <div class="rotulo-mes">${nomesMes[parseInt(mes,10)-1]}/${ano.slice(2)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderGraficoCategorias(){
+  const el = document.getElementById('graficoCategorias');
+  if(!el) return;
+  const saidas = caixa.filter(c=>c.tipo==='saida' && c.categoria);
+  if(saidas.length===0){ el.innerHTML = '<div class="vazio">Cadastre saídas com categoria para ver o gráfico.</div>'; return; }
+
+  const porCategoria = {};
+  saidas.forEach(c=>{ porCategoria[c.categoria] = (porCategoria[c.categoria]||0) + c.valor; });
+  const total = Object.values(porCategoria).reduce((s,v)=>s+v,0);
+  const ordenado = Object.entries(porCategoria).sort((a,b)=>b[1]-a[1]);
+
+  el.innerHTML = ordenado.map(([cat,valor])=>{
+    const pct = Math.round((valor/total)*100);
+    return `
+      <div class="barra-grafico">
+        <div class="rotulo-barra"><span>${escapeHtml(cat)}</span><span>${formatarMoeda(valor)} (${pct}%)</span></div>
+        <div class="barra-fundo"><div class="barra-preenchida vermelha" style="width:${pct}%;"></div></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderContasReceber(){
+  const el = document.getElementById('listaReceber');
+  if(!el) return;
+  const pendentes = orcamentos.filter(o=>o.status==='aprovado' && !o.pago);
+  if(pendentes.length===0){ el.innerHTML = '<div class="vazio">Nenhum orçamento aprovado pendente de pagamento.</div>'; return; }
+  const total = pendentes.reduce((s,o)=>s+o.total,0);
+  const hoje = new Date();
+  el.innerHTML = pendentes.map(o=>{
+    const dataOrc = new Date(o.data+'T00:00:00');
+    const diasPassados = Math.floor((hoje-dataOrc)/(1000*60*60*24));
+    const vencido = diasPassados > 30;
+    return `
+    <div class="lista-item">
+      <div>
+        <div class="principal">${escapeHtml(nomeCliente(o.clienteId))} · ${formatarMoeda(o.total)}</div>
+        <div class="secundario">Aprovado em ${formatarData(o.data)}${vencido? ' · <span style="color:var(--vermelho);font-weight:600;">Vencido há '+diasPassados+' dias</span>':''}</div>
+      </div>
+      <div class="acoes">
+        <button class="btn btn-fantasma" onclick="alternarPago('${o.id}')">Marcar pago</button>
+      </div>
+    </div>
+  `;}).join('') + `<div style="text-align:right;font-weight:600;margin-top:10px;">Total a receber: ${formatarMoeda(total)}</div>`;
+}
+
+function calcularDAS(){
+  const inss = parseFloat(document.getElementById('dasInss').value)||0;
+  const iss = parseFloat(document.getElementById('dasIss').value)||0;
+  const total = inss+iss;
+  document.getElementById('resultadoDAS').style.display='block';
+  document.getElementById('resultadoDAS').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Total da guia (DAS) este mês</span><span class="val">${formatarMoeda(total)}</span></div>
+  `;
+}
+
+// ---------- BACKUP ----------
+function baixarBackup(){
+  const dados = { clientes, orcamentos, caixa, agenda, estoque, exportadoEm:new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(dados,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'eletrocore-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(valor){
+  if(valor===null || valor===undefined) return '';
+  const texto = String(valor).replace(/"/g,'""');
+  return /[",\n;]/.test(texto) ? `"${texto}"` : texto;
+}
+function baixarCsv(nomeArquivo, linhas){
+  const conteudo = linhas.map(linha=>linha.map(csvEscape).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+conteudo], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nomeArquivo;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function montarTabelasParaExportacao(){
+  const linhasClientes = [['nome','telefone','email','endereco','categoria','proximaRevisao']];
+  clientes.forEach(c=>linhasClientes.push([c.nome,c.telefone,c.email,c.endereco,c.categoria,c.proximaRevisao]));
+
+  const linhasOrcamentos = [['numero','clienteNome','data','status','pago','recorrente','km','valorDeslocamento','desconto','total']];
+  orcamentos.forEach(o=>linhasOrcamentos.push([o.numero,nomeCliente(o.clienteId),o.data,o.status,o.pago?'sim':'não',o.recorrente?'sim':'não',o.km,o.valorDeslocamento,o.desconto,o.total]));
+
+  const linhasItensOrcamento = [['orcamentoNumero','descricao','tipo','quantidade','valorUnitario','valorTotal']];
+  orcamentos.forEach(o=>{
+    (o.itens||[]).forEach(i=>linhasItensOrcamento.push([o.numero,i.descricao,i.tipo,i.qtd,i.valor,(i.qtd*i.valor).toFixed(2)]));
+  });
+
+  const linhasCaixa = [['tipo','valor','data','categoria','pagamento','descricao']];
+  caixa.forEach(c=>linhasCaixa.push([c.tipo,c.valor,c.data,c.categoria,c.pagamento,c.descricao]));
+
+  const linhasEstoque = [['nome','categoria','unidade','custo','margem','precoVenda','qtd','minimo']];
+  estoque.forEach(e=>linhasEstoque.push([e.nome,e.categoria,e.unidade,e.custo,e.margem,e.precoVenda,e.qtd,e.minimo]));
+
+  const linhasAgenda = [['clienteNome','servico','data','hora','status']];
+  agenda.forEach(a=>linhasAgenda.push([nomeCliente(a.clienteId),a.servico,a.data,a.hora,a.status]));
+
+  return {
+    clientes: linhasClientes,
+    orcamentos: linhasOrcamentos,
+    itens_orcamento: linhasItensOrcamento,
+    caixa: linhasCaixa,
+    estoque: linhasEstoque,
+    agenda: linhasAgenda
+  };
+}
+
+function exportarParaPowerBI(){
+  const dataExportacao = new Date().toISOString().slice(0,10);
+  const tabelas = montarTabelasParaExportacao();
+
+  baixarCsv(`eletrocore_clientes_${dataExportacao}.csv`, tabelas.clientes);
+  baixarCsv(`eletrocore_orcamentos_${dataExportacao}.csv`, tabelas.orcamentos);
+  baixarCsv(`eletrocore_itens_orcamento_${dataExportacao}.csv`, tabelas.itens_orcamento);
+  baixarCsv(`eletrocore_caixa_${dataExportacao}.csv`, tabelas.caixa);
+  baixarCsv(`eletrocore_estoque_${dataExportacao}.csv`, tabelas.estoque);
+  baixarCsv(`eletrocore_agenda_${dataExportacao}.csv`, tabelas.agenda);
+
+  mostrarConfirmacao('6 arquivos CSV baixados');
+}
+
+function exportarContatosVcard(){
+  if(clientes.length===0){ alert('Nenhum cliente cadastrado ainda.'); return; }
+  let vcf = '';
+  clientes.forEach(c=>{
+    vcf += 'BEGIN:VCARD\r\nVERSION:3.0\r\n';
+    vcf += `FN:${c.nome}\r\n`;
+    vcf += `N:${c.nome};;;;\r\n`;
+    if(c.telefone) vcf += `TEL;TYPE=CELL:${c.telefone}\r\n`;
+    if(c.email) vcf += `EMAIL:${c.email}\r\n`;
+    if(c.endereco) vcf += `ADR;TYPE=HOME:;;${c.endereco};;;;\r\n`;
+    if(c.categoria) vcf += `NOTE:Cliente EletroCore - ${c.categoria}\r\n`;
+    vcf += 'END:VCARD\r\n';
+  });
+  const blob = new Blob([vcf], {type:'text/vcard;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'eletrocore_contatos.vcf';
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarConfirmacao('Arquivo de contatos baixado');
+}
+
+// ---------- SINCRONIZAÇÃO COM GOOGLE SHEETS ----------
+let urlSheets = '';
+let syncAutomaticoAtivo = false;
+let syncEmAndamento = false;
+let syncPendente = false;
+
+async function carregarConfigSync(){
+  try{
+    const r1 = await appStorage.get('eletrocore:urlSheets');
+    urlSheets = r1 ? r1.value : '';
+    const r2 = await appStorage.get('eletrocore:syncAutomatico');
+    syncAutomaticoAtivo = r2 ? r2.value==='1' : false;
+  }catch(e){}
+  const elUrl = document.getElementById('urlSheets');
+  const elCheck = document.getElementById('syncAutomaticoAtivo');
+  if(elUrl) elUrl.value = urlSheets;
+  if(elCheck) elCheck.checked = syncAutomaticoAtivo;
+}
+
+async function salvarUrlSheets(){
+  urlSheets = document.getElementById('urlSheets').value.trim();
+  syncAutomaticoAtivo = document.getElementById('syncAutomaticoAtivo').checked;
+  try{
+    await appStorage.set('eletrocore:urlSheets', urlSheets);
+    await appStorage.set('eletrocore:syncAutomatico', syncAutomaticoAtivo?'1':'0');
+    mostrarConfirmacao('Configuração salva');
+  }catch(e){}
+}
+
+async function sincronizarComSheets(manual){
+  if(!urlSheets){
+    if(manual) alert('Cole a URL do App da Web do Google Apps Script antes de sincronizar.');
+    return;
+  }
+  if(syncEmAndamento){ syncPendente = true; return; }
+  syncEmAndamento = true;
+  const statusEl = document.getElementById('statusSyncSheets');
+  if(statusEl) statusEl.textContent = 'Sincronizando...';
+  try{
+    const tabelas = montarTabelasParaExportacao();
+    await fetch(urlSheets, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(tabelas)
+    });
+    const agora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    if(statusEl) statusEl.textContent = 'Última sincronização: '+agora+' (verifique na planilha se os dados chegaram)';
+    if(manual) mostrarConfirmacao('Sincronizado com a planilha');
+  }catch(e){
+    if(statusEl) statusEl.textContent = 'Falha ao sincronizar — confira a URL e sua conexão.';
+  }
+  syncEmAndamento = false;
+  if(syncPendente){ syncPendente=false; sincronizarComSheets(false); }
+}
+
+function triggerSyncSheets(){
+  if(syncAutomaticoAtivo && urlSheets){ sincronizarComSheets(false); }
+}
+
+function restaurarBackup(evento){
+  const arquivo = evento.target.files[0];
+  if(!arquivo) return;
+  const leitor = new FileReader();
+  leitor.onload = async function(e){
+    try{
+      const dados = JSON.parse(e.target.result);
+      if(!confirm('Isso vai substituir os dados atuais pelos do backup. Continuar?')) return;
+      clientes = dados.clientes || [];
+      orcamentos = dados.orcamentos || [];
+      caixa = dados.caixa || [];
+      agenda = dados.agenda || [];
+      estoque = dados.estoque || [];
+      await salvarClientes(); await salvarOrcamentos(); await salvarCaixa(); await salvarAgenda(); await salvarEstoque();
+      renderClientes(); renderOrcamentos(); renderCaixa(); renderAgenda(); renderEstoque(); renderFinanceiro();
+      preencherSelectClientes();
+      alert('Backup restaurado com sucesso.');
+    }catch(err){
+      alert('Não foi possível ler esse arquivo de backup.');
+    }
+  };
+  leitor.readAsText(arquivo);
+}
+
+// ---------- CALCULADORAS EXTRAS ----------
+function calcularQuedaTensao(){
+  const corrente = parseFloat(document.getElementById('qtCorrente').value);
+  const comprimento = parseFloat(document.getElementById('qtComprimento').value);
+  const bitola = parseFloat(document.getElementById('qtBitola').value);
+  const tensao = parseFloat(document.getElementById('qtTensao').value);
+  if(!corrente || !comprimento || !bitola){ alert('Preencha corrente, comprimento e bitola.'); return; }
+
+  // resistividade do cobre ≈ 0.0178 Ω·mm²/m ; queda = 2 * L * I * rho / S (circuito ida e volta)
+  const resistividadeCobre = 0.0178;
+  const quedaV = (2 * comprimento * corrente * resistividadeCobre) / bitola;
+  const quedaPct = (quedaV/tensao)*100;
+
+  document.getElementById('resultadoQueda').style.display='block';
+  document.getElementById('resultadoQueda').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Queda de tensão</span><span class="val">${quedaV.toFixed(2)} V</span></div>
+    <div class="resultado-linha"><span class="rot">Percentual sobre a tensão</span><span class="val ${quedaPct>4?'vermelho-txt':''}">${quedaPct.toFixed(1)}%</span></div>
+    <div style="font-size:11px;color:#6B6B68;margin-top:6px;">A NBR 5410 recomenda no máximo ~4% de queda para circuitos terminais. Acima disso, considere aumentar a bitola do fio.</div>
+  `;
+}
+
+function calcularConsumo(){
+  const potencia = parseFloat(document.getElementById('ceoPotencia').value);
+  const horas = parseFloat(document.getElementById('ceoHoras').value);
+  const dias = parseFloat(document.getElementById('ceoDias').value)||30;
+  const tarifa = parseFloat(document.getElementById('ceoTarifa').value);
+  if(!potencia || !horas){ alert('Preencha a potência e as horas de uso.'); return; }
+
+  const kwhDia = (potencia/1000)*horas;
+  const kwhMes = kwhDia*dias;
+  const custoMes = tarifa ? kwhMes*tarifa : null;
+
+  document.getElementById('resultadoConsumo').style.display='block';
+  document.getElementById('resultadoConsumo').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Consumo por dia</span><span class="val">${kwhDia.toFixed(2)} kWh</span></div>
+    <div class="resultado-linha"><span class="rot">Consumo por mês</span><span class="val">${kwhMes.toFixed(1)} kWh</span></div>
+    ${custoMes!==null ? `<div class="resultado-linha"><span class="rot">Custo estimado por mês</span><span class="val">${formatarMoeda(custoMes)}</span></div>` : ''}
+  `;
+}
+
+function calcularDeslocamento(){
+  const km = parseFloat(document.getElementById('deslKm').value);
+  const consumo = parseFloat(document.getElementById('deslConsumo').value);
+  const preco = parseFloat(document.getElementById('deslPreco').value);
+  if(!km || !consumo || !preco){ alert('Preencha a distância, o consumo do veículo e o preço do combustível.'); return; }
+
+  const litros = km/consumo;
+  const custo = litros*preco;
+
+  document.getElementById('resultadoDeslocamento').style.display='block';
+  document.getElementById('resultadoDeslocamento').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Combustível gasto</span><span class="val">${litros.toFixed(2)} L</span></div>
+    <div class="resultado-linha"><span class="rot">Custo estimado do trajeto</span><span class="val">${formatarMoeda(custo)}</span></div>
+    <div style="font-size:11px;color:#6B6B68;margin-top:6px;">Esse é só o custo de combustível — não inclui desgaste do veículo, seu tempo de deslocamento ou manutenção. Use como piso mínimo pra não cobrar abaixo do custo.</div>
+  `;
+}
+
+function calcularAterramento(){
+  const rho = parseFloat(document.getElementById('atSolo').value);
+  const haste = parseFloat(document.getElementById('atHaste').value);
+  // fórmula simplificada de haste vertical: R = rho / (2 * pi * L) * ln(4L/d), d assumido 1.6cm (haste 5/8")
+  const d = 0.016;
+  const R = (rho/(2*Math.PI*haste)) * Math.log((4*haste)/d);
+
+  document.getElementById('resultadoAterramento').style.display='block';
+  document.getElementById('resultadoAterramento').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Resistência estimada (1 haste)</span><span class="val">${R.toFixed(1)} Ω</span></div>
+    <div style="font-size:11px;color:#6B6B68;margin-top:6px;">A NBR 5410 geralmente busca valores abaixo de 10-25 Ω dependendo da instalação. Se a estimativa ficar alta, pode ser necessário usar mais de uma haste interligada. Confirme sempre com medição real (terrômetro).</div>
+  `;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// inicializa com um item de orçamento em branco
+adicionarLinhaItem();
+document.getElementById('caixaData').value = new Date().toISOString().slice(0,10);
+document.getElementById('orcData').value = new Date().toISOString().slice(0,10);
+
+// ---------- MODO ESCURO ----------
+async function alternarModoEscuro(){
+  const escuro = document.body.classList.toggle('escuro');
+  document.getElementById('btnModoEscuro').textContent = escuro ? '☀️' : '🌙';
+  try{ await appStorage.set('eletrocore:modoEscuro', escuro ? '1' : '0'); }catch(e){}
+}
+async function carregarModoEscuro(){
+  try{
+    const r = await appStorage.get('eletrocore:modoEscuro');
+    if(r && r.value==='1'){ document.body.classList.add('escuro'); document.getElementById('btnModoEscuro').textContent='☀️'; }
+  }catch(e){}
+}
+carregarModoEscuro();
+
+// ---------- PIN DE ACESSO ----------
+async function verificarPin(){
+  let pinSalvo = null;
+  try{ const r = await appStorage.get('eletrocore:pin'); pinSalvo = r ? r.value : null; }catch(e){}
+  if(!pinSalvo) return;
+  document.getElementById('telaBloqueio').classList.add('aberto');
+  document.getElementById('pinCorreto').dataset.pin = pinSalvo;
+}
+function tentarPin(){
+  const digitado = document.getElementById('inputPin').value;
+  const correto = document.getElementById('pinCorreto').dataset.pin;
+  if(digitado===correto){
+    document.getElementById('telaBloqueio').classList.remove('aberto');
+  } else {
+    document.getElementById('erroPin').style.display='block';
+    document.getElementById('inputPin').value='';
+  }
+}
+async function definirPin(){
+  const novoPin = prompt('Crie um PIN de 4 dígitos para proteger o app (deixe em branco para remover a proteção):');
+  if(novoPin===null) return;
+  try{
+    if(novoPin.trim()===''){ await appStorage.set('eletrocore:pin', ''); alert('Proteção por PIN removida.'); }
+    else { await appStorage.set('eletrocore:pin', novoPin.trim()); alert('PIN definido com sucesso.'); }
+  }catch(e){ alert('Não foi possível salvar o PIN.'); }
+}
+verificarPin();
+
+carregarTudo();
+</script>
+
+<div class="modal-fundo" id="telaBloqueio" style="z-index:999;">
+  <div class="modal">
+    <h3>EletroCore</h3>
+    <div class="sub">DIGITE O PIN PARA ACESSAR</div>
+    <input type="password" id="inputPin" inputmode="numeric" maxlength="8" placeholder="PIN" style="text-align:center;font-size:20px;letter-spacing:4px;">
+    <div id="erroPin" style="display:none;color:#C0392B;font-size:12px;margin-top:8px;text-align:center;">PIN incorreto, tente de novo.</div>
+    <button class="btn btn-primario btn-bloco" style="margin-top:14px;" onclick="tentarPin()">Entrar</button>
+    <span id="pinCorreto" style="display:none;"></span>
+  </div>
+</div>
+</body>
+</html>
