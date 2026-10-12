@@ -184,13 +184,15 @@
 <div class="app">
 
   <div class="topo">
-    <svg class="logo-icone" viewBox="0 0 52 52">
-      <circle cx="26" cy="26" r="24" fill="#111111" stroke="#111111" stroke-width="2"/>
-      <path d="M28 12 L18 28 L25 28 L23 40 L36 22 L28 22 Z" fill="#8FBF4A"/>
-    </svg>
-    <div style="flex:1;">
-      <h1>EletroCore</h1>
-      <p>GESTÃO DO NEGÓCIO</p>
+    <div id="marcaTopo" style="display:flex; align-items:center; gap:12px; flex:1;">
+      <svg class="logo-icone" viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="24" fill="#111111" stroke="#111111" stroke-width="2"/>
+        <path d="M28 12 L18 28 L25 28 L23 40 L36 22 L28 22 Z" fill="#8FBF4A"/>
+      </svg>
+      <div>
+        <h1>EletroCore</h1>
+        <p>GESTÃO DO NEGÓCIO</p>
+      </div>
     </div>
     <button class="btn btn-fantasma" onclick="alternarModoEscuro()" id="btnModoEscuro" style="padding:8px 12px;">🌙</button>
   </div>
@@ -628,6 +630,14 @@
       <button class="btn btn-fantasma btn-bloco" onclick="definirPin()">Definir ou remover PIN de acesso</button>
     </div>
 
+    <div class="cartao">
+      <h2>Aparência</h2>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="ocultarMarcaCheck" style="width:auto;" onchange="alternarMarcaTopo()">
+        <label for="ocultarMarcaCheck" style="margin:0;">Ocultar nome e logo no topo do app</label>
+      </div>
+    </div>
+
   </div>
 
   <!-- CALCULADORA -->
@@ -643,6 +653,163 @@
         <button class="btn btn-fantasma" onclick="limparHistoricoCalculo()">Limpar</button>
       </div>
       <div id="listaHistoricoCalc" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Lei de Ohm</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Preencha quaisquer dois valores e calcule os outros dois.</p>
+      <div class="grid-form">
+        <div>
+          <label>Tensão — V (volts)</label>
+          <input type="number" id="ohmV" placeholder="Ex: 220">
+        </div>
+        <div>
+          <label>Corrente — I (ampères)</label>
+          <input type="number" id="ohmI" placeholder="Ex: 10">
+        </div>
+        <div>
+          <label>Resistência — R (ohms)</label>
+          <input type="number" id="ohmR" placeholder="Ex: 22">
+        </div>
+        <div>
+          <label>Potência — P (watts)</label>
+          <input type="number" id="ohmP" placeholder="Ex: 2200">
+        </div>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularLeiDeOhm()">Calcular</button>
+      <button class="btn btn-fantasma btn-bloco" onclick="limparLeiDeOhm()">Limpar campos</button>
+      <div class="resultado-calc" id="resultadoOhm" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Circuito em série</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">A corrente é igual em todo o circuito; a tensão se divide entre os resistores (Lei de Kirchhoff das tensões).</p>
+      <div class="grid-form uma">
+        <div>
+          <label>Tensão da fonte (V)</label>
+          <input type="number" id="serieTensao" placeholder="Ex: 220">
+        </div>
+      </div>
+      <div id="listaResistoresSerie"></div>
+      <button class="btn btn-fantasma" onclick="adicionarResistor('serie')" style="margin-top:6px;">+ Adicionar resistor</button>
+      <button class="btn btn-primario btn-bloco" onclick="calcularSerie()" style="margin-top:10px;">Calcular</button>
+      <div class="resultado-calc" id="resultadoSerie" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Circuito em paralelo</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">A tensão é igual em todos os ramos; a corrente se divide entre os resistores (Lei de Kirchhoff das correntes).</p>
+      <div class="grid-form uma">
+        <div>
+          <label>Tensão da fonte (V)</label>
+          <input type="number" id="paraleloTensao" placeholder="Ex: 220">
+        </div>
+      </div>
+      <div id="listaResistoresParalelo"></div>
+      <button class="btn btn-fantasma" onclick="adicionarResistor('paralelo')" style="margin-top:6px;">+ Adicionar resistor</button>
+      <button class="btn btn-primario btn-bloco" onclick="calcularParalelo()" style="margin-top:10px;">Calcular</button>
+      <div class="resultado-calc" id="resultadoParalelo" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Circuito misto (editor livre)</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Monte o circuito em etapas ligadas em série. Cada etapa pode ser um resistor simples ou um grupo em paralelo. Dentro de cada ramo do paralelo, escreva um valor (ex: 20) ou vários em série separados por + (ex: 10+15).</p>
+      <div class="grid-form uma">
+        <div>
+          <label>Tensão da fonte (V)</label>
+          <input type="number" id="mistoTensao" placeholder="Ex: 220">
+        </div>
+      </div>
+      <div id="listaEtapasMisto"></div>
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button class="btn btn-fantasma" onclick="adicionarEtapaMisto('resistor')">+ Resistor em série</button>
+        <button class="btn btn-fantasma" onclick="adicionarEtapaMisto('paralelo')">+ Grupo em paralelo</button>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularMisto()" style="margin-top:10px;">Calcular</button>
+      <div class="resultado-calc" id="resultadoMisto" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Corrente total e corrente corrigida</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">A corrente corrigida leva em conta o agrupamento de circuitos e a temperatura ambiente — é ela que define a bitola mínima do fio, não a corrente nominal.</p>
+      <div class="grid-form">
+        <div>
+          <label>Potência total (W)</label>
+          <input type="number" id="correnteTotalPotencia" placeholder="Ex: 6000">
+        </div>
+        <div>
+          <label>Tensão</label>
+          <select id="correnteTotalTensao">
+            <option value="127">127V</option>
+            <option value="220" selected>220V</option>
+            <option value="380">380V (trifásico)</option>
+          </select>
+        </div>
+        <div>
+          <label>Tipo de isolação do cabo</label>
+          <select id="tipoIsolacao" onchange="atualizarOpcoesTemperatura()">
+            <option value="pvc">PVC (70°C)</option>
+            <option value="xlpe">EPR/XLPE (90°C)</option>
+          </select>
+        </div>
+        <div>
+          <label>Fator de agrupamento</label>
+          <select id="fatorAgrupamento">
+            <option value="1">1 circuito — 1,00</option>
+            <option value="0.8">2 circuitos — 0,80</option>
+            <option value="0.7">3 circuitos — 0,70</option>
+            <option value="0.65">4 circuitos — 0,65</option>
+            <option value="0.6">5 circuitos — 0,60</option>
+            <option value="0.57">6 a 9 circuitos — 0,57</option>
+            <option value="0.5">10 a 20 circuitos — 0,50</option>
+          </select>
+        </div>
+        <div>
+          <label>Ou: condutores carregados no mesmo eletroduto (opcional)</label>
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="numCondutoresEletroduto" placeholder="Ex: 8" oninput="aplicarCondutoresAoAgrupamento()" style="flex:1;">
+            <select id="tipoCircuitoCondutores" onchange="aplicarCondutoresAoAgrupamento()" style="width:auto;">
+              <option value="2">2 por circuito (monofásico/bifásico)</option>
+              <option value="3">3 por circuito (trifásico)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label>Temperatura ambiente</label>
+          <select id="fatorTemperatura">
+            <option value="1.00">30°C — 1,00</option>
+            <option value="0.94">35°C — 0,94</option>
+            <option value="0.87">40°C — 0,87</option>
+            <option value="0.79">45°C — 0,79</option>
+            <option value="0.71">50°C — 0,71</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-fantasma btn-bloco" onclick="usarCircuitosDoComodo()" style="margin-top:4px;">Usar nº de circuitos do dimensionamento por cômodo</button>
+      <button class="btn btn-primario btn-bloco" onclick="calcularCorrenteCorrigida()">Calcular</button>
+      <div class="resultado-calc" id="resultadoCorrenteCorrigida" style="display:none;"></div>
+    </div>
+
+    <div class="cartao">
+      <h2>Dimensionamento por cômodo (TUGs, TUEs e iluminação)</h2>
+      <p style="font-size:12px;color:var(--cinza-texto);margin-top:0;">Estimativa baseada nas regras mínimas da NBR 5410 para pontos de tomada e iluminação. Adicione um cômodo por vez; no final, veja a carga total, o disjuntor geral sugerido e uma divisão de circuitos.</p>
+      <div id="listaComodos"></div>
+      <button class="btn btn-fantasma btn-bloco" onclick="adicionarComodo()">+ Adicionar cômodo</button>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button class="btn btn-fantasma" style="flex:1;" onclick="salvarProjetoComodos()">Salvar projeto</button>
+        <button class="btn btn-fantasma" style="flex:1;" onclick="carregarProjetoComodos()">Carregar projeto</button>
+      </div>
+      <div style="margin-top:10px;">
+        <label>Como dividir os circuitos de tomada</label>
+        <select id="estrategiaCircuitos">
+          <option value="equilibrada">Equilibrada (cargas parecidas em cada circuito)</option>
+          <option value="sequencial">Sequencial (na ordem dos cômodos)</option>
+        </select>
+      </div>
+      <button class="btn btn-primario btn-bloco" onclick="calcularComodos()" style="margin-top:10px;">Calcular carga total e circuitos</button>
+      <button class="btn btn-fantasma btn-bloco" onclick="calcularMaterialDosComodos()">Estimar material a partir desses cômodos</button>
+      <button class="btn btn-verde btn-bloco" onclick="gerarOrcamentoDosComodos()">Gerar orçamento a partir desse dimensionamento</button>
+      <div class="resultado-calc" id="resultadoComodos" style="display:none;"></div>
     </div>
 
     <div class="cartao">
@@ -1881,6 +2048,643 @@ const BITOLAS_FIO = [
   {mm:35,  amp:119},
 ];
 
+// Capacidade de condução aproximada para condutores EPR/XLPE (90°C), mesma referência de método B1
+const BITOLAS_FIO_XLPE = [
+  {mm:1.5, amp:19.5},
+  {mm:2.5, amp:27},
+  {mm:4,   amp:36},
+  {mm:6,   amp:46},
+  {mm:10,  amp:63},
+  {mm:16,  amp:85},
+  {mm:25,  amp:110},
+  {mm:35,  amp:137},
+];
+
+const TABELAS_TEMPERATURA = {
+  pvc: [
+    {temp:'30°C', fator:1.00}, {temp:'35°C', fator:0.94}, {temp:'40°C', fator:0.87},
+    {temp:'45°C', fator:0.79}, {temp:'50°C', fator:0.71}
+  ],
+  xlpe: [
+    {temp:'30°C', fator:1.00}, {temp:'35°C', fator:0.96}, {temp:'40°C', fator:0.91},
+    {temp:'45°C', fator:0.87}, {temp:'50°C', fator:0.82}, {temp:'55°C', fator:0.76}, {temp:'60°C', fator:0.71}
+  ]
+};
+
+function atualizarOpcoesTemperatura(){
+  const tipo = document.getElementById('tipoIsolacao').value;
+  const select = document.getElementById('fatorTemperatura');
+  select.innerHTML = TABELAS_TEMPERATURA[tipo].map(t=>`<option value="${t.fator}">${t.temp} — ${t.fator.toFixed(2)}</option>`).join('');
+}
+
+function bitolaNeutroTerra(bitolaFase){
+  // Neutro: igual à fase (regra prática para a maioria das instalações monofásicas/bifásicas)
+  const neutro = bitolaFase;
+  // Terra: regra simplificada da NBR 5410 (tabela 58)
+  let terra;
+  if(bitolaFase<=16) terra = bitolaFase;
+  else if(bitolaFase<=35) terra = 16;
+  else terra = bitolaFase/2;
+  return {neutro, terra};
+}
+
+// ---------- LEI DE OHM ----------
+function limparLeiDeOhm(){
+  ['ohmV','ohmI','ohmR','ohmP'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('resultadoOhm').style.display='none';
+}
+
+function calcularLeiDeOhm(){
+  const vEl = document.getElementById('ohmV');
+  const iEl = document.getElementById('ohmI');
+  const rEl = document.getElementById('ohmR');
+  const pEl = document.getElementById('ohmP');
+  let v = parseFloat(vEl.value), i = parseFloat(iEl.value), r = parseFloat(rEl.value), p = parseFloat(pEl.value);
+  const conhecidos = [!isNaN(v), !isNaN(i), !isNaN(r), !isNaN(p)].filter(Boolean).length;
+  if(conhecidos<2){ alert('Preencha ao menos dois valores (entre V, I, R e P).'); return; }
+
+  const formulas = [];
+  if(!isNaN(v) && !isNaN(i)){
+    r = v/i; p = v*i;
+    formulas.push('R = V ÷ I', 'P = V × I');
+  } else if(!isNaN(v) && !isNaN(r)){
+    i = v/r; p = (v*v)/r;
+    formulas.push('I = V ÷ R', 'P = V² ÷ R');
+  } else if(!isNaN(i) && !isNaN(r)){
+    v = i*r; p = i*i*r;
+    formulas.push('V = I × R', 'P = I² × R');
+  } else if(!isNaN(v) && !isNaN(p)){
+    i = p/v; r = (v*v)/p;
+    formulas.push('I = P ÷ V', 'R = V² ÷ P');
+  } else if(!isNaN(i) && !isNaN(p)){
+    v = p/i; r = p/(i*i);
+    formulas.push('V = P ÷ I', 'R = P ÷ I²');
+  } else if(!isNaN(r) && !isNaN(p)){
+    v = Math.sqrt(p*r); i = Math.sqrt(p/r);
+    formulas.push('V = √(P × R)', 'I = √(P ÷ R)');
+  }
+
+  vEl.value = v.toFixed(2); iEl.value = i.toFixed(3); rEl.value = r.toFixed(2); pEl.value = p.toFixed(2);
+
+  document.getElementById('resultadoOhm').style.display='block';
+  document.getElementById('resultadoOhm').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Fórmulas usadas</span><span class="val">${formulas.join(' · ')}</span></div>
+    <div class="resultado-linha"><span class="rot">Tensão (V)</span><span class="val">${v.toFixed(2)} V</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente (I)</span><span class="val">${i.toFixed(3)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Resistência (R)</span><span class="val">${r.toFixed(2)} Ω</span></div>
+    <div class="resultado-linha"><span class="rot">Potência (P)</span><span class="val">${p.toFixed(2)} W</span></div>
+  `;
+  salvarHistoricoCalculo('Lei de Ohm', `V=${v.toFixed(1)}V, I=${i.toFixed(2)}A, R=${r.toFixed(1)}Ω, P=${p.toFixed(1)}W`);
+}
+
+// ---------- CIRCUITOS SÉRIE / PARALELO ----------
+let contadorResistor = 0;
+function adicionarResistor(tipo){
+  contadorResistor++;
+  const container = document.getElementById(tipo==='serie' ? 'listaResistoresSerie' : 'listaResistoresParalelo');
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex; gap:6px; margin-bottom:6px; align-items:center;';
+  div.innerHTML = `
+    <input type="number" placeholder="R${contadorResistor} (Ω)" class="valor-resistor" style="flex:1;">
+    <button class="remover-item" onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(div);
+}
+// pré-popula com 2 resistores em cada
+['serie','paralelo'].forEach(tipo=>{ adicionarResistor(tipo); adicionarResistor(tipo); });
+
+function calcularSerie(){
+  const tensao = parseFloat(document.getElementById('serieTensao').value);
+  const resistores = Array.from(document.querySelectorAll('#listaResistoresSerie .valor-resistor'))
+    .map(el=>parseFloat(el.value)).filter(v=>!isNaN(v) && v>0);
+  if(!tensao || resistores.length===0){ alert('Informe a tensão e ao menos um resistor.'); return; }
+
+  const rTotal = resistores.reduce((s,r)=>s+r,0);
+  const iTotal = tensao/rTotal;
+  const quedas = resistores.map(r=>r*iTotal);
+  const somaQuedas = quedas.reduce((s,q)=>s+q,0);
+
+  const linhasQuedas = resistores.map((r,idx)=>`<div class="resultado-linha"><span class="rot">Queda em R${idx+1} (${r}Ω)</span><span class="val">${quedas[idx].toFixed(2)} V</span></div>`).join('');
+
+  document.getElementById('resultadoSerie').style.display='block';
+  document.getElementById('resultadoSerie').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Resistência total (Req)</span><span class="val">${rTotal.toFixed(2)} Ω</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente total (igual em todo o circuito)</span><span class="val">${iTotal.toFixed(3)} A</span></div>
+    ${linhasQuedas}
+    <div class="resultado-linha"><span class="rot">Soma das quedas (deve bater com a fonte)</span><span class="val">${somaQuedas.toFixed(2)} V</span></div>
+  `;
+  salvarHistoricoCalculo('Circuito série', `${resistores.length} resistores, Req=${rTotal.toFixed(1)}Ω, I=${iTotal.toFixed(2)}A`);
+}
+
+function calcularParalelo(){
+  const tensao = parseFloat(document.getElementById('paraleloTensao').value);
+  const resistores = Array.from(document.querySelectorAll('#listaResistoresParalelo .valor-resistor'))
+    .map(el=>parseFloat(el.value)).filter(v=>!isNaN(v) && v>0);
+  if(!tensao || resistores.length===0){ alert('Informe a tensão e ao menos um resistor.'); return; }
+
+  const inversoSoma = resistores.reduce((s,r)=>s+1/r,0);
+  const rTotal = 1/inversoSoma;
+  const correntes = resistores.map(r=>tensao/r);
+  const iTotal = correntes.reduce((s,i)=>s+i,0);
+
+  const linhasCorrentes = resistores.map((r,idx)=>`<div class="resultado-linha"><span class="rot">Corrente em R${idx+1} (${r}Ω)</span><span class="val">${correntes[idx].toFixed(3)} A</span></div>`).join('');
+
+  document.getElementById('resultadoParalelo').style.display='block';
+  document.getElementById('resultadoParalelo').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Resistência total (Req)</span><span class="val">${rTotal.toFixed(2)} Ω</span></div>
+    ${linhasCorrentes}
+    <div class="resultado-linha"><span class="rot">Corrente total (soma dos ramos)</span><span class="val">${iTotal.toFixed(3)} A</span></div>
+  `;
+  salvarHistoricoCalculo('Circuito paralelo', `${resistores.length} resistores, Req=${rTotal.toFixed(2)}Ω, Itotal=${iTotal.toFixed(2)}A`);
+}
+
+// ---------- CIRCUITO MISTO (EDITOR LIVRE) ----------
+let contadorEtapaMisto = 0;
+function adicionarEtapaMisto(tipo, valores){
+  contadorEtapaMisto++;
+  const id = 'etapa-'+contadorEtapaMisto;
+  const div = document.createElement('div');
+  div.id = id;
+  div.dataset.tipo = tipo;
+  div.style.cssText = 'border:1px solid var(--cinza-borda); border-radius:8px; padding:10px; margin-bottom:8px; background:var(--cinza-bg);';
+  if(tipo==='resistor'){
+    div.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <strong style="font-size:12px; min-width:90px;">Resistor série</strong>
+        <input type="number" class="etapa-valor" placeholder="Valor (Ω)" value="${valores?valores[0]:''}" style="flex:1;">
+        <button class="remover-item" onclick="document.getElementById('${id}').remove()">×</button>
+      </div>`;
+  } else {
+    const ramos = valores && valores.length ? valores : ['',''];
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="font-size:12px;">Grupo em paralelo (ramos)</strong>
+        <button class="remover-item" onclick="document.getElementById('${id}').remove()">×</button>
+      </div>
+      <div class="ramos-paralelo">
+        ${ramos.map(r=>`<input type="text" class="ramo-valor" placeholder="Ex: 20 ou 10+15" value="${r}" style="margin-bottom:6px;">`).join('')}
+      </div>
+      <button class="btn btn-fantasma" onclick="adicionarRamoParalelo('${id}')">+ Ramo</button>`;
+  }
+  document.getElementById('listaEtapasMisto').appendChild(div);
+}
+function adicionarRamoParalelo(idEtapa){
+  const container = document.querySelector('#'+idEtapa+' .ramos-paralelo');
+  const input = document.createElement('input');
+  input.type='text'; input.className='ramo-valor'; input.placeholder='Ex: 20 ou 10+15'; input.style.marginBottom='6px';
+  container.appendChild(input);
+}
+// Pré-popula com o modelo clássico: R1 em série + (R2 // R3)
+adicionarEtapaMisto('resistor', ['10']);
+adicionarEtapaMisto('paralelo', ['20','30']);
+
+function calcularMisto(){
+  const tensao = parseFloat(document.getElementById('mistoTensao').value);
+  if(!tensao){ alert('Informe a tensão da fonte.'); return; }
+  const etapasEls = document.querySelectorAll('#listaEtapasMisto > div');
+  if(etapasEls.length===0){ alert('Adicione ao menos uma etapa.'); return; }
+
+  const etapas = [];
+  let erro = false;
+  etapasEls.forEach(el=>{
+    if(el.dataset.tipo==='resistor'){
+      const v = parseFloat(el.querySelector('.etapa-valor').value);
+      if(!v || v<=0){ erro = true; return; }
+      etapas.push({tipo:'resistor', req:v, valor:v});
+    } else {
+      const ramos = Array.from(el.querySelectorAll('.ramo-valor')).map(inp=>{
+        const partes = inp.value.split('+').map(p=>parseFloat(p.trim())).filter(p=>!isNaN(p) && p>0);
+        return {resistores: partes, rtotal: partes.reduce((s,p)=>s+p,0)};
+      }).filter(r=>r.resistores.length>0);
+      if(ramos.length===0){ erro = true; return; }
+      const req = 1/ramos.reduce((s,r)=>s+1/r.rtotal,0);
+      etapas.push({tipo:'paralelo', req, ramos});
+    }
+  });
+  if(erro){ alert('Confira os valores: todos os resistores precisam ser números maiores que zero.'); return; }
+
+  const rTotal = etapas.reduce((s,e)=>s+e.req,0);
+  const iTotal = tensao/rTotal;
+  let html = `
+    <div class="resultado-linha"><span class="rot">Resistência total (Req)</span><span class="val">${rTotal.toFixed(2)} Ω</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente total</span><span class="val">${iTotal.toFixed(3)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Potência total</span><span class="val">${(tensao*iTotal).toFixed(2)} W</span></div>`;
+
+  etapas.forEach((e,idx)=>{
+    const vEtapa = iTotal*e.req;
+    if(e.tipo==='resistor'){
+      html += `<div class="resultado-linha"><span class="rot">Etapa ${idx+1} — resistor ${e.valor}Ω: queda</span><span class="val">${vEtapa.toFixed(2)} V</span></div>`;
+    } else {
+      html += `<div class="resultado-linha"><span class="rot">Etapa ${idx+1} — grupo paralelo (Req ${e.req.toFixed(2)}Ω): tensão</span><span class="val">${vEtapa.toFixed(2)} V</span></div>`;
+      e.ramos.forEach((r,ri)=>{
+        const iRamo = vEtapa/r.rtotal;
+        html += `<div class="resultado-linha" style="padding-left:12px;"><span class="rot">Ramo ${ri+1} (${r.resistores.join('+')} = ${r.rtotal}Ω): corrente</span><span class="val">${iRamo.toFixed(3)} A</span></div>`;
+        if(r.resistores.length>1){
+          r.resistores.forEach(rv=>{
+            html += `<div class="resultado-linha" style="padding-left:24px;"><span class="rot">queda em ${rv}Ω</span><span class="val">${(iRamo*rv).toFixed(2)} V</span></div>`;
+          });
+        }
+      });
+    }
+  });
+
+  document.getElementById('resultadoMisto').style.display='block';
+  document.getElementById('resultadoMisto').innerHTML = html;
+  salvarHistoricoCalculo('Circuito misto', `${etapas.length} etapas, Req=${rTotal.toFixed(1)}Ω, I=${iTotal.toFixed(2)}A`);
+}
+
+// ---------- CORRENTE TOTAL E CORRIGIDA ----------
+function fatorAgrupamentoPorCircuitos(total){
+  if(total<=1) return '1';
+  if(total===2) return '0.8';
+  if(total===3) return '0.7';
+  if(total===4) return '0.65';
+  if(total===5) return '0.6';
+  if(total<=9) return '0.57';
+  return '0.5';
+}
+function aplicarCondutoresAoAgrupamento(){
+  const n = parseFloat(document.getElementById('numCondutoresEletroduto').value);
+  if(!n || n<=0) return;
+  const porCircuito = parseFloat(document.getElementById('tipoCircuitoCondutores').value);
+  const circuitosEquivalentes = Math.max(1, Math.ceil(n/porCircuito));
+  document.getElementById('fatorAgrupamento').value = fatorAgrupamentoPorCircuitos(circuitosEquivalentes);
+}
+
+function calcularCorrenteCorrigida(){
+  const potencia = parseFloat(document.getElementById('correnteTotalPotencia').value);
+  const tensao = parseFloat(document.getElementById('correnteTotalTensao').value);
+  const fag = parseFloat(document.getElementById('fatorAgrupamento').value);
+  const ftemp = parseFloat(document.getElementById('fatorTemperatura').value);
+  const tipoIsolacao = document.getElementById('tipoIsolacao').value;
+  if(!potencia){ alert('Informe a potência total.'); return; }
+
+  const tensaoSel = document.getElementById('correnteTotalTensao').value;
+  const correnteTotal = tensaoSel==='380' ? potencia/(Math.sqrt(3)*380) : potencia/tensao;
+  const fatorTotal = fag*ftemp;
+  const correnteCorrigida = correnteTotal/fatorTotal;
+
+  const tabelaFio = tipoIsolacao==='xlpe' ? BITOLAS_FIO_XLPE : BITOLAS_FIO;
+  const fioSugerido = tabelaFio.find(f=>f.amp>=correnteCorrigida) || tabelaFio[tabelaFio.length-1];
+  const disjuntorSugerido = DISJUNTORES_PADRAO.find(d=>d>=correnteTotal) || DISJUNTORES_PADRAO[DISJUNTORES_PADRAO.length-1];
+  const neutroTerra = bitolaNeutroTerra(fioSugerido.mm);
+  const capacidadeCorrigida = fioSugerido.amp*fatorTotal;
+  const coordenacaoOk = disjuntorSugerido <= capacidadeCorrigida;
+
+  document.getElementById('resultadoCorrenteCorrigida').style.display='block';
+  document.getElementById('resultadoCorrenteCorrigida').innerHTML = `
+    <div class="resultado-linha"><span class="rot">Isolação considerada</span><span class="val">${tipoIsolacao==='xlpe'?'EPR/XLPE (90°C)':'PVC (70°C)'}</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente total (nominal)</span><span class="val">${correnteTotal.toFixed(2)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Fator de correção combinado</span><span class="val">${fatorTotal.toFixed(2)}</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente corrigida</span><span class="val" style="color:var(--vermelho);">${correnteCorrigida.toFixed(2)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Bitola da fase (pela corrente corrigida)</span><span class="val">${fioSugerido.mm} mm²</span></div>
+    <div class="resultado-linha"><span class="rot">Bitola do neutro</span><span class="val">${neutroTerra.neutro} mm²</span></div>
+    <div class="resultado-linha"><span class="rot">Bitola do terra</span><span class="val">${neutroTerra.terra} mm²</span></div>
+    <div class="resultado-linha"><span class="rot">Disjuntor sugerido (pela corrente nominal)</span><span class="val">${disjuntorSugerido} A</span></div>
+    <div class="resultado-linha"><span class="rot">Capacidade corrigida do fio escolhido (Iz)</span><span class="val">${capacidadeCorrigida.toFixed(1)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Coordenação disjuntor × fio (In ≤ Iz)</span><span class="val" style="color:${coordenacaoOk?'var(--verde)':'var(--vermelho)'};">${coordenacaoOk?'OK':'Atenção'}</span></div>
+    ${coordenacaoOk ? '' : '<div style="font-size:11px;color:var(--vermelho);margin-top:4px;">O disjuntor sugerido é maior que a capacidade corrigida do fio — o fio não ficaria protegido. Suba a bitola do fio ou reveja os fatores de correção.</div>'}
+  `;
+  salvarHistoricoCalculo('Corrente corrigida', `${potencia}W → nominal ${correnteTotal.toFixed(1)}A, corrigida ${correnteCorrigida.toFixed(1)}A, fio ${fioSugerido.mm}mm²`);
+}
+
+// ---------- DIMENSIONAMENTO POR CÔMODO ----------
+let contadorComodo = 0;
+function adicionarComodo(){
+  contadorComodo++;
+  const div = document.createElement('div');
+  div.className = 'cartao';
+  div.style.background = 'var(--cinza-bg)';
+  div.id = 'comodo-'+contadorComodo;
+  div.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong style="font-size:13px;">Cômodo ${contadorComodo}</strong>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-fantasma" style="padding:4px 10px; min-height:30px;" onclick="duplicarComodo('comodo-${contadorComodo}')">Duplicar</button>
+        <button class="remover-item" onclick="document.getElementById('comodo-${contadorComodo}').remove()">×</button>
+      </div>
+    </div>
+    <div class="grid-form">
+      <div>
+        <label>Nome do cômodo</label>
+        <input type="text" class="comodo-nome" placeholder="Ex: Sala, Cozinha, Quarto 1">
+      </div>
+      <div>
+        <label>Tipo</label>
+        <select class="comodo-tipo">
+          <option value="sala_quarto">Sala / quarto / dependências gerais</option>
+          <option value="cozinha_area">Cozinha / área de serviço / copa</option>
+          <option value="banheiro">Banheiro</option>
+        </select>
+      </div>
+      <div>
+        <label>Perímetro do cômodo (m)</label>
+        <input type="number" class="comodo-perimetro" placeholder="Ex: 12">
+      </div>
+      <div>
+        <label>Área do cômodo (m²)</label>
+        <input type="number" class="comodo-area" placeholder="Ex: 9">
+      </div>
+      <div>
+        <label>Pontos de luz (luminárias)</label>
+        <input type="number" class="comodo-luz" placeholder="1" value="1" min="1">
+      </div>
+      <div>
+        <label>TUEs extras (W) — chuveiro, forno, etc. (opcional)</label>
+        <input type="number" class="comodo-tue" placeholder="Ex: 5500">
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+      <input type="checkbox" class="comodo-exclusivo" style="width:auto;">
+      <label style="margin:0; font-size:12px;">A TUE desse cômodo precisa de circuito exclusivo (chuveiro, forno, ar-condicionado etc.)</label>
+    </div>
+  `;
+  document.getElementById('listaComodos').appendChild(div);
+}
+adicionarComodo();
+adicionarComodo();
+
+function duplicarComodo(idOrigem){
+  const origem = document.getElementById(idOrigem);
+  if(!origem) return;
+  const dados = {
+    nome: origem.querySelector('.comodo-nome').value,
+    tipo: origem.querySelector('.comodo-tipo').value,
+    perimetro: origem.querySelector('.comodo-perimetro').value,
+    area: origem.querySelector('.comodo-area').value,
+    luz: origem.querySelector('.comodo-luz').value,
+    tue: origem.querySelector('.comodo-tue').value,
+    exclusivo: origem.querySelector('.comodo-exclusivo').checked
+  };
+  adicionarComodo();
+  const novo = document.getElementById('comodo-'+contadorComodo);
+  novo.querySelector('.comodo-nome').value = dados.nome ? dados.nome+' (cópia)' : '';
+  novo.querySelector('.comodo-tipo').value = dados.tipo;
+  novo.querySelector('.comodo-perimetro').value = dados.perimetro;
+  novo.querySelector('.comodo-area').value = dados.area;
+  novo.querySelector('.comodo-luz').value = dados.luz;
+  novo.querySelector('.comodo-tue').value = dados.tue;
+  novo.querySelector('.comodo-exclusivo').checked = dados.exclusivo;
+  mostrarConfirmacao('Cômodo duplicado');
+}
+
+function coletarDadosComodos(){
+  return Array.from(document.querySelectorAll('#listaComodos > div')).map(div=>({
+    nome: div.querySelector('.comodo-nome').value.trim(),
+    tipo: div.querySelector('.comodo-tipo').value,
+    perimetro: parseFloat(div.querySelector('.comodo-perimetro').value)||0,
+    area: parseFloat(div.querySelector('.comodo-area').value)||0,
+    luz: Math.max(1, parseInt(div.querySelector('.comodo-luz').value)||1),
+    tue: parseFloat(div.querySelector('.comodo-tue').value)||0,
+    exclusivo: div.querySelector('.comodo-exclusivo').checked
+  }));
+}
+
+async function salvarProjetoComodos(){
+  const dados = coletarDadosComodos();
+  try{
+    await appStorage.set('eletrocore:projetoComodos', JSON.stringify(dados));
+    mostrarConfirmacao('Projeto de cômodos salvo');
+  }catch(e){ alert('Não foi possível salvar.'); }
+}
+
+async function carregarProjetoComodos(){
+  let dados = [];
+  try{
+    const r = await appStorage.get('eletrocore:projetoComodos');
+    dados = r ? JSON.parse(r.value) : [];
+  }catch(e){}
+  if(dados.length===0){ alert('Nenhum projeto salvo ainda.'); return; }
+  document.getElementById('listaComodos').innerHTML = '';
+  dados.forEach(c=>{
+    adicionarComodo();
+    const divAtual = document.getElementById('comodo-'+contadorComodo);
+    divAtual.querySelector('.comodo-nome').value = c.nome||'';
+    divAtual.querySelector('.comodo-tipo').value = c.tipo||'sala_quarto';
+    divAtual.querySelector('.comodo-perimetro').value = c.perimetro||'';
+    divAtual.querySelector('.comodo-area').value = c.area||'';
+    divAtual.querySelector('.comodo-luz').value = c.luz||1;
+    divAtual.querySelector('.comodo-tue').value = c.tue||'';
+    divAtual.querySelector('.comodo-exclusivo').checked = !!c.exclusivo;
+  });
+  mostrarConfirmacao('Projeto carregado');
+}
+
+let ultimoResultadoComodos = null;
+
+function calcularComodos(){
+  const comodosDados = coletarDadosComodos();
+  if(comodosDados.length===0){ alert('Adicione ao menos um cômodo.'); return; }
+
+  let potenciaTotalTugIlum = 0;
+  let potenciaExclusivos = 0;
+  let totalTugs = 0;
+  let totalPontosLuz = 0;
+  const linhasComodos = [];
+  const itensParaCircuito = []; // {nome, potencia} — não exclusivos, pra agrupar em circuitos de TUG
+  const circuitosExclusivos = []; // {nome, potencia}
+
+  comodosDados.forEach((c,idx)=>{
+    const nome = c.nome || ('Cômodo '+(idx+1));
+    let tugs, potenciaTugs;
+    if(c.tipo==='banheiro'){
+      tugs = 1; potenciaTugs = 100;
+    } else if(c.tipo==='cozinha_area'){
+      tugs = Math.max(1, Math.ceil(c.perimetro/3.5));
+      const com600 = Math.min(tugs,3);
+      const com100 = Math.max(0, tugs-3);
+      potenciaTugs = com600*600 + com100*100;
+    } else {
+      tugs = Math.max(1, Math.ceil(c.perimetro/5));
+      potenciaTugs = tugs*100;
+    }
+
+    let potenciaIluminacao;
+    if(c.area<=6){ potenciaIluminacao = 100; }
+    else { potenciaIluminacao = 100 + Math.ceil((c.area-6)/4)*60; }
+    totalPontosLuz += c.luz;
+    totalTugs += tugs;
+
+    const potenciaBase = potenciaTugs + potenciaIluminacao;
+    potenciaTotalTugIlum += potenciaBase;
+    itensParaCircuito.push({nome, potencia: potenciaBase});
+
+    if(c.tue>0){
+      if(c.exclusivo){
+        potenciaExclusivos += c.tue;
+        circuitosExclusivos.push({nome, potencia: c.tue});
+      } else {
+        potenciaTotalTugIlum += c.tue;
+        itensParaCircuito[itensParaCircuito.length-1].potencia += c.tue;
+      }
+    }
+
+    linhasComodos.push(`
+      <div class="resultado-linha"><span class="rot">${escapeHtml(nome)}</span><span class="val">${tugs} TUG(s) · ${(potenciaBase+(c.exclusivo?0:c.tue)).toFixed(0)}W</span></div>
+    `);
+  });
+
+  const potenciaTotal = potenciaTotalTugIlum + potenciaExclusivos;
+  const tensao = 220;
+  const correnteTotal = potenciaTotal/tensao;
+  const disjuntorGeral = DISJUNTORES_PADRAO.find(d=>d>=correnteTotal) || DISJUNTORES_PADRAO[DISJUNTORES_PADRAO.length-1];
+
+  // Agrupa os cômodos (não exclusivos) em circuitos de TUG, respeitando ~2540VA por circuito (20A em 127V)
+  const limitePorCircuito = 20*127;
+  const estrategia = document.getElementById('estrategiaCircuitos').value;
+  let circuitosTUG = [];
+  if(estrategia==='sequencial'){
+    let circuitoAtual = {nomes:[], potencia:0};
+    itensParaCircuito.forEach(item=>{
+      if(circuitoAtual.potencia + item.potencia > limitePorCircuito && circuitoAtual.nomes.length>0){
+        circuitosTUG.push(circuitoAtual);
+        circuitoAtual = {nomes:[], potencia:0};
+      }
+      circuitoAtual.nomes.push(item.nome);
+      circuitoAtual.potencia += item.potencia;
+    });
+    if(circuitoAtual.nomes.length>0) circuitosTUG.push(circuitoAtual);
+  } else {
+    // Equilibrada: define o nº mínimo de circuitos e distribui do maior pro menor, sempre no circuito mais vazio
+    const somaItens = itensParaCircuito.reduce((s,i)=>s+i.potencia,0);
+    const maiorItem = itensParaCircuito.reduce((m,i)=>Math.max(m,i.potencia),0);
+    let qtdCircuitos = Math.max(1, Math.ceil(somaItens/limitePorCircuito));
+    const montar = (n)=>{
+      const grupos = Array.from({length:n},()=>({nomes:[], potencia:0}));
+      [...itensParaCircuito].sort((a,b)=>b.potencia-a.potencia).forEach(item=>{
+        const alvo = grupos.reduce((menor,g)=>g.potencia<menor.potencia?g:menor, grupos[0]);
+        alvo.nomes.push(item.nome);
+        alvo.potencia += item.potencia;
+      });
+      return grupos;
+    };
+    circuitosTUG = montar(qtdCircuitos);
+    // se algum circuito estourou o limite, aumenta a quantidade até caber (ou até um circuito por item)
+    while(circuitosTUG.some(g=>g.potencia>limitePorCircuito && g.nomes.length>1) && qtdCircuitos<itensParaCircuito.length){
+      qtdCircuitos++;
+      circuitosTUG = montar(qtdCircuitos);
+    }
+  }
+
+  // Circuitos de iluminação: agrupa até 6 cômodos por circuito (referência prática)
+  const nomesComodos = comodosDados.map((c,idx)=>c.nome||('Cômodo '+(idx+1)));
+  const circuitosIluminacao = [];
+  for(let i=0;i<nomesComodos.length;i+=6){
+    circuitosIluminacao.push(nomesComodos.slice(i,i+6));
+  }
+
+  const linhasCircuitosTUG = circuitosTUG.map((c,idx)=>{
+    const disj = DISJUNTORES_PADRAO.find(d=>d>=(c.potencia/127)) || 20;
+    return `<div class="resultado-linha"><span class="rot">Circuito TUG ${idx+1}: ${c.nomes.map(escapeHtml).join(', ')}</span><span class="val">${disj}A · ${c.potencia.toFixed(0)}W</span></div>`;
+  }).join('');
+
+  const linhasCircuitosIlum = circuitosIluminacao.map((nomes,idx)=>
+    `<div class="resultado-linha"><span class="rot">Circuito Iluminação ${idx+1}: ${nomes.map(escapeHtml).join(', ')}</span><span class="val">10A</span></div>`
+  ).join('');
+
+  const linhasExclusivos = circuitosExclusivos.map(c=>{
+    const correnteExcl = c.potencia/220;
+    const disjExcl = DISJUNTORES_PADRAO.find(d=>d>=correnteExcl) || DISJUNTORES_PADRAO[DISJUNTORES_PADRAO.length-1];
+    return `<div class="resultado-linha"><span class="rot">Circuito exclusivo: ${escapeHtml(c.nome)}</span><span class="val">${disjExcl}A · ${c.potencia.toFixed(0)}W</span></div>`;
+  }).join('');
+
+  document.getElementById('resultadoComodos').style.display='block';
+  document.getElementById('resultadoComodos').innerHTML = `
+    ${linhasComodos.join('')}
+    <div class="resultado-linha" style="border-top:1px solid var(--cinza-borda);margin-top:6px;padding-top:10px;"><span class="rot">Potência total instalada</span><span class="val">${formatarMoeda(potenciaTotal)}</span></div>
+    <div class="resultado-linha"><span class="rot">Total de TUGs (pontos de tomada)</span><span class="val">${totalTugs}</span></div>
+    <div class="resultado-linha"><span class="rot">Corrente total (220V)</span><span class="val">${correnteTotal.toFixed(1)} A</span></div>
+    <div class="resultado-linha"><span class="rot">Disjuntor geral sugerido</span><span class="val">${disjuntorGeral} A</span></div>
+    <div style="font-weight:600;margin-top:10px;font-size:13px;">Divisão de circuitos sugerida</div>
+    ${linhasCircuitosTUG}
+    ${linhasCircuitosIlum}
+    ${linhasExclusivos}
+    <div style="font-size:11px;color:var(--cinza-texto);margin-top:8px;">Total de circuitos: ${circuitosTUG.length+circuitosIluminacao.length+circuitosExclusivos.length} — use esse número no campo "Fator de agrupamento" da calculadora de corrente corrigida (botão abaixo faz isso automaticamente).</div>
+  `;
+
+  ultimoResultadoComodos = {
+    totalCircuitos: circuitosTUG.length+circuitosIluminacao.length+circuitosExclusivos.length,
+    totalTugs, totalPontosLuz,
+    totalComodos: comodosDados.length,
+    exclusivos: circuitosExclusivos.map(c=>c.nome)
+  };
+
+  salvarHistoricoCalculo('Dimensionamento por cômodo', `${comodosDados.length} cômodos, ${formatarMoeda(potenciaTotal)}, disjuntor geral ${disjuntorGeral}A`);
+}
+
+function gerarOrcamentoDosComodos(){
+  if(!ultimoResultadoComodos){ alert('Calcule primeiro o dimensionamento por cômodo.'); return; }
+  const r = ultimoResultadoComodos;
+
+  // escolhe o QDC pelo total de circuitos (6, 12, 18 ou 24)
+  let tamanhoQdc = 24;
+  if(r.totalCircuitos<=6) tamanhoQdc = 6;
+  else if(r.totalCircuitos<=12) tamanhoQdc = 12;
+  else if(r.totalCircuitos<=18) tamanhoQdc = 18;
+
+  const itensDesejados = [
+    {nome:'Instalação de tomada simples', qtd:r.totalTugs},
+    {nome:'Instalação de interruptor simples ou pulsador', qtd:r.totalComodos},
+    {nome:'Instalação de lustre simples ou luminária', qtd:r.totalPontosLuz},
+    {nome:`Instalação e montagem QDC ${tamanhoQdc} circuitos + DR + DPS`, qtd:1}
+  ];
+
+  // limpa as linhas atuais do orçamento e preenche com os itens do catálogo
+  document.getElementById('itensOrcamento').innerHTML = '';
+  let naoEncontrados = [];
+  itensDesejados.forEach(it=>{
+    const servico = catalogoServicos.find(s=>s.nome===it.nome);
+    if(servico){
+      const valor = servico.precoMinimo!==undefined ? servico.precoMinimo : servico.preco;
+      adicionarLinhaItem(servico.nome, it.qtd, valor.toFixed(2), 'Mão de obra');
+    } else {
+      naoEncontrados.push(it.nome);
+    }
+  });
+
+  document.querySelector('.aba[data-aba="orcamentos"]').click();
+  document.getElementById('painel-orcamentos').scrollIntoView({behavior:'smooth'});
+  atualizarTotal();
+
+  let aviso = 'Itens adicionados ao orçamento — escolha o cliente e ajuste o que precisar.';
+  if(r.exclusivos.length>0){
+    aviso += ' Circuitos exclusivos ('+r.exclusivos.join(', ')+') não foram incluídos: adicione os equipamentos manualmente.';
+  }
+  if(naoEncontrados.length>0){
+    aviso += ' Não achei no catálogo: '+naoEncontrados.join(', ')+'.';
+  }
+  alert(aviso);
+}
+
+function usarCircuitosDoComodo(){
+  if(!ultimoResultadoComodos){ alert('Calcule primeiro o dimensionamento por cômodo, abaixo.'); return; }
+  const total = ultimoResultadoComodos.totalCircuitos;
+  document.getElementById('fatorAgrupamento').value = fatorAgrupamentoPorCircuitos(total);
+  mostrarConfirmacao(`Usando ${total} circuitos no fator de agrupamento`);
+}
+
+function calcularMaterialDosComodos(){
+  if(!ultimoResultadoComodos){ alert('Calcule primeiro o dimensionamento por cômodo.'); return; }
+  const distanciaStr = prompt('Distância média estimada de cada ponto até o quadro (metros):','6');
+  if(distanciaStr===null) return;
+  const distancia = parseFloat(distanciaStr)||0;
+  const totalPontos = ultimoResultadoComodos.totalTugs + ultimoResultadoComodos.totalPontosLuz;
+  const fator = 1.15;
+  const metrosFio = Math.ceil(totalPontos*distancia*fator);
+  const caixinhas = totalPontos;
+  const conectores = Math.ceil(totalPontos*2*fator);
+
+  document.getElementById('resultadoComodos').innerHTML += `
+    <div style="font-weight:600;margin-top:10px;font-size:13px;">Estimativa de material (TUGs + pontos de luz)</div>
+    <table class="tabela-material">
+      <tr><th>Material</th><th>Estimativa</th></tr>
+      <tr><td>Fio/cabo (metros)</td><td>${metrosFio} m</td></tr>
+      <tr><td>Caixinhas de embutir</td><td>${caixinhas} un</td></tr>
+      <tr><td>Conectores/terminais</td><td>${conectores} un</td></tr>
+    </table>
+  `;
+}
+
 function calcularDisjuntorFio(){
   const potencia = parseFloat(document.getElementById('calcPotencia').value);
   const tensaoSel = document.getElementById('calcTensao').value;
@@ -2642,6 +3446,23 @@ async function carregarModoEscuro(){
   }catch(e){}
 }
 carregarModoEscuro();
+
+// ---------- OCULTAR NOME/LOGO ----------
+async function alternarMarcaTopo(){
+  const ocultar = document.getElementById('ocultarMarcaCheck').checked;
+  document.getElementById('marcaTopo').style.display = ocultar ? 'none' : 'flex';
+  try{ await appStorage.set('eletrocore:ocultarMarca', ocultar ? '1' : '0'); }catch(e){}
+}
+async function carregarMarcaTopo(){
+  try{
+    const r = await appStorage.get('eletrocore:ocultarMarca');
+    if(r && r.value==='1'){
+      document.getElementById('marcaTopo').style.display='none';
+      document.getElementById('ocultarMarcaCheck').checked=true;
+    }
+  }catch(e){}
+}
+carregarMarcaTopo();
 
 // ---------- PIN DE ACESSO ----------
 async function verificarPin(){
